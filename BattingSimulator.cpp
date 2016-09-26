@@ -15,7 +15,7 @@ http://www.ogre3d.org/wiki/
 -----------------------------------------------------------------------------
 */
 
-#include "TutorialApplication.h"
+#include "BattingSimulator.h"
 
 Spheres balls;
 
