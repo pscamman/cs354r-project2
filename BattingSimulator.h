@@ -22,11 +22,11 @@ http://www.ogre3d.org/wiki/
 
 //---------------------------------------------------------------------------
 
-class TutorialApplication : public BaseApplication
+class BattingSimulator : public BaseApplication
 {
 public:
-    TutorialApplication(void);
-    virtual ~TutorialApplication(void);
+    BattingSimulator(void);
+    virtual ~BattingSimulator(void);
 
 protected:
     virtual void createScene(void);

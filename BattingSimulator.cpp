@@ -20,16 +20,16 @@ http://www.ogre3d.org/wiki/
 Spheres balls;
 
 //---------------------------------------------------------------------------
-TutorialApplication::TutorialApplication(void)
+BattingSimulator::BattingSimulator(void)
 {
 }
 //---------------------------------------------------------------------------
-TutorialApplication::~TutorialApplication(void)
+BattingSimulator::~BattingSimulator(void)
 {
 }
 
 //---------------------------------------------------------------------------
-void TutorialApplication::createScene(void)
+void BattingSimulator::createScene(void)
 {
     using namespace Ogre;
 
@@ -131,18 +131,16 @@ void TutorialApplication::createScene(void)
 
     // ent = mSceneMgr->createEntity("ogrehead.mesh");
     // ogreNode->attachObject(ent);
-
     SceneNode* sphereNode;
-    for(int i = 0; i < 16; ++i) {
-        ent = mSceneMgr->createEntity("sphere" + std::to_string(i), Ogre::SceneManager::PT_SPHERE);
-        ent->setMaterialName(matString);
-        ent->setCastShadows(true);
-        sphereNode = rootNode->createChildSceneNode();
-        sphereNode->setPosition(-90+60*(i%4), 150, -90+60*(i/4));
-        sphereNode->setScale(.38, .38, .38);
-        sphereNode->attachObject(ent);
-        balls.add(::Sphere(sphereNode, -180, 180, -180, 180, -180, 180));
-    }
+    ent = mSceneMgr->createEntity("sphere" + std::to_string(i), Ogre::SceneManager::PT_SPHERE);
+    ent->setMaterialName(matString);
+    ent->setCastShadows(true);
+    sphereNode = rootNode->createChildSceneNode();
+    sphereNode->setPosition(-90+60*(i%4), 150, -90+60*(i/4));
+    sphereNode->setScale(.38, .38, .38);
+    sphereNode->attachObject(ent);
+    balls.add(::Sphere(sphereNode, -180, 180, -180, 180, -180, 180));
+    
 }
 //---------------------------------------------------------------------------
 
@@ -165,7 +163,7 @@ extern "C" {
         srand(time(NULL));
 
         // Create application object
-        TutorialApplication app;
+        BattingSimulator app;
 
         try {
             app.go();
