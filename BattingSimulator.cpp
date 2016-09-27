@@ -132,15 +132,15 @@ void BattingSimulator::createScene(void)
     // ent = mSceneMgr->createEntity("ogrehead.mesh");
     // ogreNode->attachObject(ent);
     SceneNode* sphereNode;
-    ent = mSceneMgr->createEntity("sphere" + std::to_string(i), Ogre::SceneManager::PT_SPHERE);
+    ent = mSceneMgr->createEntity("sphere", Ogre::SceneManager::PT_SPHERE);
     ent->setMaterialName(matString);
     ent->setCastShadows(true);
     sphereNode = rootNode->createChildSceneNode();
-    sphereNode->setPosition(-90+60*(i%4), 150, -90+60*(i/4));
+    sphereNode->setPosition(0, 0, 0);
     sphereNode->setScale(.38, .38, .38);
     sphereNode->attachObject(ent);
     balls.add(::Sphere(sphereNode, -180, 180, -180, 180, -180, 180));
-    
+
 }
 //---------------------------------------------------------------------------
 
