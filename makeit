@@ -1,3 +1,4 @@
 #!/bin/sh
+export LD_RUN_PATH=/lusr/opt/bullet-2.79/lib
 make clean
 make

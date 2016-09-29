@@ -18,6 +18,10 @@ http://www.ogre3d.org/wiki/
 #ifndef __BaseApplication_h_
 #define __BaseApplication_h_
 
+#ifndef SOUND_PATH
+#define SOUND_PATH "Bell.wav"
+#endif
+
 #include <OgreCamera.h>
 #include <OgreEntity.h>
 #include <OgreLogManager.h>
@@ -26,15 +30,23 @@ http://www.ogre3d.org/wiki/
 #include <OgreSceneManager.h>
 #include <OgreRenderWindow.h>
 #include <OgreConfigFile.h>
+#include <btBulletDynamicsCommon.h>
 
-//my includes
+// ------------- our includes ------------
+// ogre
 #include <OgrePlane.h>
 #include <OgreVector3.h>
+
+// stl
 #include <cmath>         /* abs, pow    */
 #include <string>        /* to_string   */
 #include <stdlib.h>      /* srand, rand */
 #include <time.h>        /* time        */
-#include <vector>
+#include <vector>        /* vector      */
+
+// SDL
+#include "SDL/SDL.h"
+// ---------------------------------------
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_APPLE
 #  include <OIS/OISEvents.h>
@@ -97,6 +109,7 @@ protected:
     virtual void setupResources(void);
     virtual void createResourceListener(void);
     virtual void loadResources(void);
+    virtual void createBulletSim(void);
     virtual bool frameRenderingQueued(const Ogre::FrameEvent& evt);
 
     virtual bool keyPressed(const OIS::KeyEvent &arg);
@@ -134,6 +147,14 @@ protected:
 
     // Added for Mac compatibility
     Ogre::String                 m_ResourcePath;
+    // OgreBullet
+    btDefaultCollisionConfiguration*        collisionConfiguration;
+    btCollisionDispatcher*                  dispatcher;
+    btBroadphaseInterface*                  overlappingPairCache;
+    btSequentialImpulseConstraintSolver*    solver;
+    btDiscreteDynamicsWorld*                bWorld;
+    btCollisionShape*                       groundShape;
+    btAlignedObjectArray<btCollisionShape*> collisionShapes;
 
 #ifdef OGRE_STATIC_LIB
     Ogre::StaticPluginLoader m_StaticPluginLoader;
@@ -258,6 +279,12 @@ class Spheres {
 };
 
 extern Spheres balls;
+
+extern Uint8*        audio_pos; // global pointer to the audio buffer to be played
+extern Uint32        audio_len; // remaining length of the sample we have to play
+extern Uint8*        wav_buffer; // buffer containing our audio file
+extern Uint32        wav_length; // length of our sample
+extern SDL_AudioSpec wav_spec; // the specs of our piece of music
 
 //---------------------------------------------------------------------------
 

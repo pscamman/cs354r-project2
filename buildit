@@ -1,4 +1,5 @@
 #!/bin/sh
+export PKG_CONFIG_PATH=/lusr/opt/bullet-2.79/lib/pkgconfig
 rm -rf autom4te.cache
 rm -rf m4
 libtoolize --force --copy &&  aclocal &&  autoheader &&  automake --add-missing --force-missing --copy --foreign &&  autoconf
