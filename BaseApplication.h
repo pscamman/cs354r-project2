@@ -154,6 +154,7 @@ protected:
     btSequentialImpulseConstraintSolver*    solver;
     btDiscreteDynamicsWorld*                bWorld;
     btAlignedObjectArray<btRigidBody*> rigidBodies;
+    btAlignedObjectArray<btRigidBody*> environment;
 
 #ifdef OGRE_STATIC_LIB
     Ogre::StaticPluginLoader m_StaticPluginLoader;

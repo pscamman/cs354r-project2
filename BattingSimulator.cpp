@@ -31,7 +31,6 @@ BattingSimulator::BattingSimulator(void)
 //---------------------------------------------------------------------------
 BattingSimulator::~BattingSimulator(void)
 {
-    // bWorld->removeRigidBody(ballBody);
 }
 
 //---------------------------------------------------------------------------
@@ -63,12 +62,12 @@ void BattingSimulator::createScene(void)
     mCamera->lookAt(Vector3(50, 0, -50));
 
     // // Create the meshes
-    // Plane p;
-    // p.normal = Vector3::UNIT_Y;
-    // p.d = 200;
-    // MeshManager::getSingleton().createPlane("FloorPlane",
-    //     ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
-    //     p,1500,1500,1,1,true,1,5,5,Vector3::UNIT_Z);
+    Plane p;
+    p.normal = Vector3::UNIT_Y;
+    p.d = 200;
+    MeshManager::getSingleton().createPlane("FloorPlane",
+        ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+        p,1500,1500,1,1,true,1,5,5,Vector3::UNIT_Z);
 
     // p.normal = Vector3::NEGATIVE_UNIT_Y;
     // p.d = 200;
@@ -101,14 +100,14 @@ void BattingSimulator::createScene(void)
     //     p,400,400,1,1,true,1,5,5,Vector3::UNIT_Y);
 
     // // Create the entities
-    // SceneNode* rootNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
-    // Entity*    ent;
-    // String matString = "Core/StatsBlockBorder/Up";
+    SceneNode* rootNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
+    Entity*    ent;
+    String matString = "Core/StatsBlockBorder/Up";
 
-    // ent = mSceneMgr->createEntity("floor", "FloorPlane");
-    // ent->setMaterialName(matString);
-    // ent->setCastShadows(false);
-    // rootNode->attachObject(ent);
+    ent = mSceneMgr->createEntity("floor", "FloorPlane");
+    ent->setMaterialName(matString);
+    ent->setCastShadows(false);
+    rootNode->attachObject(ent);
 
     // ent = mSceneMgr->createEntity("ceil", "CeilPlane");
     // ent->setMaterialName(matString);
@@ -166,7 +165,7 @@ void BattingSimulator::createScene(void)
     //having seg fault
     std::cout << bWorld << std::endl;
     bWorld->addRigidBody(body);
-    rigidBodies.push_back(body);
+    environment.push_back(body);
 
     // create a ball
     btCollisionShape* ballShape =  new btSphereShape(1);

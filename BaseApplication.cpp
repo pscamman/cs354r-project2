@@ -168,6 +168,14 @@ void BaseApplication::destroyScene(void)
         btRigidBody* rb = rigidBodies.at(i);
         bWorld->removeRigidBody(rb);
         delete rb->getMotionState();
+        delete rb->getCollisionShape();
+        delete rb;
+    }   
+    for(int i = 0; i < environment.size(); i++){
+        btRigidBody* rb = environment.at(i);
+        bWorld->removeRigidBody(rb);
+        delete rb->getMotionState();
+        delete rb->getCollisionShape();
         delete rb;
     }   
 }
@@ -316,6 +324,8 @@ bool BaseApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
         for(int i = 0; i < rigidBodies.size(); i++){
             btRigidBody* rb = rigidBodies.at(i);
             rb->getMotionState()->getWorldTransform(trans);
+            std::cout << "height: " << trans.getOrigin().getY() << std::endl;
+
         }   
 
 
