@@ -33,6 +33,7 @@ BattingSimulator::BattingSimulator(void)
 //---------------------------------------------------------------------------
 BattingSimulator::~BattingSimulator(void)
 {
+    // bWorld->removeRigidBody(ballBody);
 }
 
 //---------------------------------------------------------------------------
@@ -63,115 +64,124 @@ void BattingSimulator::createScene(void)
     mCamera->setPosition(Vector3(600, 300, 400));
     mCamera->lookAt(Vector3(50, 0, -50));
 
-    // Create the meshes
-    Plane p;
-    p.normal = Vector3::UNIT_Y;
-    p.d = 200;
-    MeshManager::getSingleton().createPlane("FloorPlane",
-        ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
-        p,400,400,1,1,true,1,5,5,Vector3::UNIT_Z);
+    // // Create the meshes
+    // Plane p;
+    // p.normal = Vector3::UNIT_Y;
+    // p.d = 200;
+    // MeshManager::getSingleton().createPlane("FloorPlane",
+    //     ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+    //     p,400,400,1,1,true,1,5,5,Vector3::UNIT_Z);
 
-    p.normal = Vector3::NEGATIVE_UNIT_Y;
-    p.d = 200;
-    MeshManager::getSingleton().createPlane("CeilPlane",
-        ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
-        p,400,400,1,1,true,1,5,5,Vector3::NEGATIVE_UNIT_Z);
+    // p.normal = Vector3::NEGATIVE_UNIT_Y;
+    // p.d = 200;
+    // MeshManager::getSingleton().createPlane("CeilPlane",
+    //     ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+    //     p,400,400,1,1,true,1,5,5,Vector3::NEGATIVE_UNIT_Z);
 
-    p.normal = Vector3::UNIT_Z;
-    p.d = 200;
-    MeshManager::getSingleton().createPlane("WallPlaneN",
-        ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
-        p,400,400,1,1,true,1,5,5,Vector3::UNIT_Y);
+    // p.normal = Vector3::UNIT_Z;
+    // p.d = 200;
+    // MeshManager::getSingleton().createPlane("WallPlaneN",
+    //     ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+    //     p,400,400,1,1,true,1,5,5,Vector3::UNIT_Y);
 
-    p.normal = Vector3::NEGATIVE_UNIT_X;
-    p.d = 200;
-    MeshManager::getSingleton().createPlane("WallPlaneE",
-        ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
-        p,400,400,1,1,true,1,5,5,Vector3::UNIT_Y);
+    // p.normal = Vector3::NEGATIVE_UNIT_X;
+    // p.d = 200;
+    // MeshManager::getSingleton().createPlane("WallPlaneE",
+    //     ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+    //     p,400,400,1,1,true,1,5,5,Vector3::UNIT_Y);
 
-    p.normal = Vector3::NEGATIVE_UNIT_Z;
-    p.d = 200;
-    MeshManager::getSingleton().createPlane("WallPlaneS",
-        ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
-        p,400,400,1,1,true,1,5,5,Vector3::UNIT_Y);
+    // p.normal = Vector3::NEGATIVE_UNIT_Z;
+    // p.d = 200;
+    // MeshManager::getSingleton().createPlane("WallPlaneS",
+    //     ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+    //     p,400,400,1,1,true,1,5,5,Vector3::UNIT_Y);
 
-    p.normal = Vector3::UNIT_X;
-    p.d = 200;
-    MeshManager::getSingleton().createPlane("WallPlaneW",
-        ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
-        p,400,400,1,1,true,1,5,5,Vector3::UNIT_Y);
+    // p.normal = Vector3::UNIT_X;
+    // p.d = 200;
+    // MeshManager::getSingleton().createPlane("WallPlaneW",
+    //     ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+    //     p,400,400,1,1,true,1,5,5,Vector3::UNIT_Y);
 
-    // Create the entities
-    SceneNode* rootNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
-    Entity*    ent;
-    String matString = "Core/StatsBlockBorder/Up";
+    // // Create the entities
+    // SceneNode* rootNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
+    // Entity*    ent;
+    // String matString = "Core/StatsBlockBorder/Up";
 
-    ent = mSceneMgr->createEntity("floor", "FloorPlane");
-    ent->setMaterialName(matString);
-    ent->setCastShadows(false);
-    rootNode->attachObject(ent);
+    // ent = mSceneMgr->createEntity("floor", "FloorPlane");
+    // ent->setMaterialName(matString);
+    // ent->setCastShadows(false);
+    // rootNode->attachObject(ent);
 
-    ent = mSceneMgr->createEntity("ceil", "CeilPlane");
-    ent->setMaterialName(matString);
-    ent->setCastShadows(false);
-    rootNode->attachObject(ent);
+    // ent = mSceneMgr->createEntity("ceil", "CeilPlane");
+    // ent->setMaterialName(matString);
+    // ent->setCastShadows(false);
+    // rootNode->attachObject(ent);
 
-    ent = mSceneMgr->createEntity("wallN", "WallPlaneN");
-    ent->setMaterialName(matString);
-    ent->setCastShadows(false);
-    rootNode->attachObject(ent);
+    // ent = mSceneMgr->createEntity("wallN", "WallPlaneN");
+    // ent->setMaterialName(matString);
+    // ent->setCastShadows(false);
+    // rootNode->attachObject(ent);
 
-    ent = mSceneMgr->createEntity("wallE", "WallPlaneE");
-    ent->setMaterialName(matString);
-    ent->setCastShadows(false);
-    rootNode->attachObject(ent);
+    // ent = mSceneMgr->createEntity("wallE", "WallPlaneE");
+    // ent->setMaterialName(matString);
+    // ent->setCastShadows(false);
+    // rootNode->attachObject(ent);
 
-    ent = mSceneMgr->createEntity("wallS", "WallPlaneS");
-    ent->setMaterialName(matString);
-    ent->setCastShadows(false);
-    rootNode->attachObject(ent);
+    // ent = mSceneMgr->createEntity("wallS", "WallPlaneS");
+    // ent->setMaterialName(matString);
+    // ent->setCastShadows(false);
+    // rootNode->attachObject(ent);
 
-    ent = mSceneMgr->createEntity("wallW", "WallPlaneW");
-    ent->setMaterialName(matString);
-    ent->setCastShadows(false);
-    rootNode->attachObject(ent);
+    // ent = mSceneMgr->createEntity("wallW", "WallPlaneW");
+    // ent->setMaterialName(matString);
+    // ent->setCastShadows(false);
+    // rootNode->attachObject(ent);
 
     // ent = mSceneMgr->createEntity("ogrehead.mesh");
     // ogreNode->attachObject(ent);
-    SceneNode* sphereNode;
-    ent = mSceneMgr->createEntity("sphere", Ogre::SceneManager::PT_SPHERE);
-    ent->setMaterialName(matString);
-    ent->setCastShadows(true);
-    sphereNode = rootNode->createChildSceneNode();
-    sphereNode->setPosition(0, 0, 0);
-    sphereNode->setScale(.38, .38, .38);
-    sphereNode->attachObject(ent);
-    balls.add(::Sphere(sphereNode, -180, 180, -180, 180, -180, 180));
+    // SceneNode* sphereNode;
+    // ent = mSceneMgr->createEntity("sphere", Ogre::SceneManager::PT_SPHERE);
+    // ent->setMaterialName(matString);
+    // ent->setCastShadows(true);
+    // sphereNode = rootNode->createChildSceneNode();
+    // sphereNode->setPosition(0, 0, 0);
+    // sphereNode->setScale(.38, .38, .38);
+    // sphereNode->attachObject(ent);
+    // balls.add(::Sphere(sphereNode, -180, 180, -180, 180, -180, 180));
 
 
 
      ///create a few basic rigid bodies
      // start with ground plane, 1500, 1500
-    btCollisionShape* groundShape = new btBoxShape(btVector3(btScalar(1500.),btScalar(1.),btScalar(1500.)));
-    collisionShapes.push_back(groundShape);
+    btCollisionShape* groundShape = new btStaticPlaneShape(btVector3(0, 1, 0), 1);
     btTransform groundTransform;
     groundTransform.setIdentity();
     groundTransform.setOrigin(btVector3(0,-2,0));    
     btScalar mass(0.0);
     //rigidbody is dynamic if and only if mass is non zero, otherwise static
-    bool isDynamic = (mass != 0.f);
-    btVector3 localInertia(0,0,0);
-    if (isDynamic)
-       groundShape->calculateLocalInertia(mass,localInertia);
     // lathe - this plane isnt going to be moving so i dont care about setting the motion state
     //using motionstate is recommended, it provides interpolation capabilities, and only synchronizes 'active' objects
     btDefaultMotionState* myMotionState = new btDefaultMotionState(btTransform(btQuaternion(0,0,0,1), btVector3(0,10,0)));
-    btRigidBody::btRigidBodyConstructionInfo rbInfo(mass,myMotionState,groundShape,localInertia);
-    btRigidBody* body = new btRigidBody(rbInfo);
+    btRigidBody::btRigidBodyConstructionInfo groundRigidBodyCI(mass, myMotionState, groundShape, btVector3(0, 0, 0));    
+    btRigidBody* body = new btRigidBody(groundRigidBodyCI);
     //add the body to the dynamics world
     //having seg fault
+    std::cout << bWorld << std::endl;
     bWorld->addRigidBody(body);
-     
+    rigidBodies.push_back(body);
+
+    // create a ball
+    `
+    btDefaultMotionState* ballMotionState =
+                new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(0, 50, 0)));
+    btScalar bmass (1.0);
+        btVector3 fallInertia(0, 0, 0);
+        ballShape->calculateLocalInertia(bmass, fallInertia);
+    btRigidBody::btRigidBodyConstructionInfo ballRBCI(bmass, ballMotionState,ballShape,fallInertia);
+    btRigidBody* ballBody = new btRigidBody(ballRBCI);
+    bWorld->addRigidBody(ballBody);
+    rigidBodies.push_back(ballBody);
+
 }
 //---------------------------------------------------------------------------
 

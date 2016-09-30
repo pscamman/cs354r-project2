@@ -52,6 +52,11 @@ BaseApplication::~BaseApplication(void)
     if (mTrayMgr) delete mTrayMgr;
     if (mCameraMan) delete mCameraMan;
     if (mOverlaySystem) delete mOverlaySystem;
+    if (collisionConfiguration) delete collisionConfiguration;
+    if (dispatcher) delete dispatcher;
+    if (overlappingPairCache) delete overlappingPairCache;
+    if (solver) delete solver;
+    if (bWorld) delete bWorld;
 
     // Remove ourself as a Window listener
     Ogre::WindowEventUtilities::removeWindowEventListener(mWindow, this);
@@ -253,10 +258,8 @@ void BaseApplication::go(void)
 
     if (!setup())
         return;
-
     mRoot->startRendering();
-
-    // Clean up
+        // Clean up
     destroyScene();
 }
 //---------------------------------------------------------------------------
@@ -280,10 +283,11 @@ bool BaseApplication::setup(void)
     createResourceListener();
     // Load resources
     loadResources();
-
+    // Create Bullet world
+    createBulletSim();
     // Create the scene
     createScene();
-    createBulletSim();
+    
     createFrameListener();
 
     return true;
@@ -297,12 +301,17 @@ bool BaseApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
     if(mShutDown)
         return false;
 
-    // just do it
-    balls.update(evt.timeSinceLastFrame);
-
     // Need to capture/update each device
     mKeyboard->capture();
     mMouse->capture();
+
+    bWorld->stepSimulation(1 / 60.f, 10);
+        btTransform trans;
+        for(int i = 0; i < rigidBodies.size(); i++){
+            btRigidBody* rb = rigidBodies.at(i);
+            rb->getMotionState()->getWorldTransform(trans);
+        }   
+
 
     mTrayMgr->frameRenderingQueued(evt);
 

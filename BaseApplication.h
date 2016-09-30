@@ -153,8 +153,7 @@ protected:
     btBroadphaseInterface*                  overlappingPairCache;
     btSequentialImpulseConstraintSolver*    solver;
     btDiscreteDynamicsWorld*                bWorld;
-    btCollisionShape*                       groundShape;
-    btAlignedObjectArray<btCollisionShape*> collisionShapes;
+    btAlignedObjectArray<btRigidBody*> rigidBodies;
 
 #ifdef OGRE_STATIC_LIB
     Ogre::StaticPluginLoader m_StaticPluginLoader;
