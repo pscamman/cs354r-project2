@@ -325,6 +325,8 @@ bool BaseApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
             btRigidBody* rb = rigidBodies.at(i);
             rb->getMotionState()->getWorldTransform(trans);
             std::cout << "height: " << trans.getOrigin().getY() << std::endl;
+            Ogre::SceneNode *sn = static_cast<Ogre::SceneNode *> (rb->getUserPointer());
+            sn->setPosition(trans.getOrigin().getX(),trans.getOrigin().getY(),trans.getOrigin().getZ());
 
         }   
 

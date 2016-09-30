@@ -58,7 +58,7 @@ void BattingSimulator::createScene(void)
     // light->setCastShadows(true);
     // light->setDiffuseColour(ColourValue(0.8, 0, 0));
 
-    mCamera->setPosition(Vector3(600, 300, 400));
+    mCamera->setPosition(Vector3(600, 600, 400));
     mCamera->lookAt(Vector3(50, 0, -50));
 
     // // Create the meshes
@@ -100,14 +100,13 @@ void BattingSimulator::createScene(void)
     //     p,400,400,1,1,true,1,5,5,Vector3::UNIT_Y);
 
     // // Create the entities
-    SceneNode* rootNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
     Entity*    ent;
     String matString = "Core/StatsBlockBorder/Up";
 
     ent = mSceneMgr->createEntity("floor", "FloorPlane");
-    ent->setMaterialName(matString);
+    ent->setMaterialName("Examples/Rockwall");
     ent->setCastShadows(false);
-    rootNode->attachObject(ent);
+    mSceneMgr->getRootSceneNode()->createChildSceneNode("Ground")->attachObject(ent);
 
     // ent = mSceneMgr->createEntity("ceil", "CeilPlane");
     // ent->setMaterialName(matString);
@@ -136,46 +135,50 @@ void BattingSimulator::createScene(void)
 
     // ent = mSceneMgr->createEntity("ogrehead.mesh");
     // ogreNode->attachObject(ent);
-    // SceneNode* sphereNode;
-    // ent = mSceneMgr->createEntity("sphere", Ogre::SceneManager::PT_SPHERE);
-    // ent->setMaterialName(matString);
-    // ent->setCastShadows(true);
-    // sphereNode = rootNode->createChildSceneNode();
-    // sphereNode->setPosition(0, 0, 0);
+    SceneNode* sphereNode;
+    ent = mSceneMgr->createEntity("sphere", Ogre::SceneManager::PT_SPHERE);
+    ent->setMaterialName(matString);
+    ent->setCastShadows(true);
+    sphereNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
+    sphereNode->setPosition(0, 50, 0);
     // sphereNode->setScale(.38, .38, .38);
-    // sphereNode->attachObject(ent);
-    // balls.add(::Sphere(sphereNode, -180, 180, -180, 180, -180, 180));
+    sphereNode->attachObject(ent);
 
 
 
      ///create a few basic rigid bodies
      // start with ground plane, 1500, 1500
-    btCollisionShape* groundShape = new btStaticPlaneShape(btVector3(0, 1, 0), 1);
+    btCollisionShape* groundShape = new btStaticPlaneShape(btVector3(0, 1, 0), -200);
     btTransform groundTransform;
     groundTransform.setIdentity();
-    groundTransform.setOrigin(btVector3(0,-2,0));    
+    groundTransform.setOrigin(btVector3(0,-200,0));    
     btScalar mass(0.0);
     //rigidbody is dynamic if and only if mass is non zero, otherwise static
     // lathe - this plane isnt going to be moving so i dont care about setting the motion state
     //using motionstate is recommended, it provides interpolation capabilities, and only synchronizes 'active' objects
     btDefaultMotionState* myMotionState = new btDefaultMotionState(btTransform(btQuaternion(0,0,0,1), btVector3(0,10,0)));
+
     btRigidBody::btRigidBodyConstructionInfo groundRigidBodyCI(mass, myMotionState, groundShape, btVector3(0, 0, 0));    
-    btRigidBody* body = new btRigidBody(groundRigidBodyCI);
+    btRigidBody* groundBody = new btRigidBody(groundRigidBodyCI);
+    groundBody->setUserPointer(mSceneMgr->getSceneNode("Ground"));
+    groundBody->setRestitution(0.5f);
     //add the body to the dynamics world
-    //having seg fault
-    std::cout << bWorld << std::endl;
-    bWorld->addRigidBody(body);
-    environment.push_back(body);
+    // std::cout << bWorld << std::endl;
+    bWorld->addRigidBody(groundBody);
+    environment.push_back(groundBody);
 
     // create a ball
     btCollisionShape* ballShape =  new btSphereShape(1);
     btDefaultMotionState* ballMotionState =
-                new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(0, 50, 0)));
+                new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(0, 750, 0)));
     btScalar bmass (1.0);
         btVector3 fallInertia(0, 0, 0);
         ballShape->calculateLocalInertia(bmass, fallInertia);
     btRigidBody::btRigidBodyConstructionInfo ballRBCI(bmass, ballMotionState,ballShape,fallInertia);
     btRigidBody* ballBody = new btRigidBody(ballRBCI);
+    // ballBody->setLinearVelocity(btVector3(30,0,0) );
+    ballBody->setUserPointer(sphereNode);
+    ballBody->setRestitution(0.8f);
     bWorld->addRigidBody(ballBody);
     rigidBodies.push_back(ballBody);
 
