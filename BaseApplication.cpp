@@ -237,7 +237,18 @@ void BaseApplication::go(void)
     if (!setup())
         return;
 
-    mRoot->startRendering();
+    // mRoot->startRendering();
+    auto start = clock();
+    auto thisT = clock();
+    bool going = true;
+    while(going)
+    {
+        thisT = clock();
+        for(; going and start < thisT; start += CLOCKS_PER_SEC/100)
+        {
+            going = mRoot->renderOneFrame();
+        }
+    }
 
     // Clean up
     destroyScene();

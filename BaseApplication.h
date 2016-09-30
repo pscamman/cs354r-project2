@@ -37,6 +37,7 @@ http://www.ogre3d.org/wiki/
 #include <OgreVector3.h>
 
 // stl
+#include <chrono>        /* now         */
 #include <cmath>         /* abs, pow    */
 #include <string>        /* to_string   */
 #include <stdlib.h>      /* srand, rand */
