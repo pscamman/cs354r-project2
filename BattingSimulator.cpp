@@ -18,8 +18,6 @@ http://www.ogre3d.org/wiki/
 #include "BattingSimulator.h"
 
 // globals, extern variables from BaseApplication.h
-Spheres balls;
-
 Uint8*        audio_pos;  // global pointer to the audio buffer to be played
 Uint32        audio_len;  // remaining length of the sample we have to play
 Uint8*        wav_buffer; // buffer containing our audio file
@@ -70,7 +68,7 @@ void BattingSimulator::createScene(void)
     // p.d = 200;
     // MeshManager::getSingleton().createPlane("FloorPlane",
     //     ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
-    //     p,400,400,1,1,true,1,5,5,Vector3::UNIT_Z);
+    //     p,1500,1500,1,1,true,1,5,5,Vector3::UNIT_Z);
 
     // p.normal = Vector3::NEGATIVE_UNIT_Y;
     // p.d = 200;
@@ -171,7 +169,7 @@ void BattingSimulator::createScene(void)
     rigidBodies.push_back(body);
 
     // create a ball
-    `
+    btCollisionShape* ballShape =  new btSphereShape(1);
     btDefaultMotionState* ballMotionState =
                 new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(0, 50, 0)));
     btScalar bmass (1.0);

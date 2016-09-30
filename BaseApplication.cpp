@@ -164,6 +164,12 @@ void BaseApplication::createFrameListener(void)
 //---------------------------------------------------------------------------
 void BaseApplication::destroyScene(void)
 {
+    for(int i = 0; i < rigidBodies.size(); i++){
+        btRigidBody* rb = rigidBodies.at(i);
+        bWorld->removeRigidBody(rb);
+        delete rb->getMotionState();
+        delete rb;
+    }   
 }
 //---------------------------------------------------------------------------
 void BaseApplication::createViewports(void)
