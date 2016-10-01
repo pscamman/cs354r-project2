@@ -321,12 +321,20 @@ bool BaseApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
 
     bWorld->stepSimulation(1 / 60.f, 10);
         btTransform trans;
-        for(int i = 0; i < rigidBodies.size(); i++){
+        for(int i = 0; i < rigidBodies.size(); i++)
+        {
             btRigidBody* rb = rigidBodies.at(i);
             rb->getMotionState()->getWorldTransform(trans);
             Ogre::SceneNode *sn = static_cast<Ogre::SceneNode *> (rb->getUserPointer());
-            sn->setPosition(trans.getOrigin().getX(),trans.getOrigin().getY(),trans.getOrigin().getZ());
-
+            auto origin = trans.getOrigin();
+            sn->setPosition(origin.getX(),
+                            origin.getY(),
+                            origin.getZ());
+            auto orient = rb->getOrientation();
+            sn->setOrientation(orient.getW(),
+                               orient.getX(),
+                               orient.getY(),
+                               orient.getZ());
         }
 
 

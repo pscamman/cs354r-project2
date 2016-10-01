@@ -95,6 +95,7 @@ void BattingSimulator::createScene(void)
                                                                    btVector3(0,10,0)));
     btRigidBody::btRigidBodyConstructionInfo groundRBCI(mass, myMotionState, groundShape,
                                                                btVector3(0, 0, 0));
+    groundRBCI.m_friction = 1.0f;
     btRigidBody* groundBody = new btRigidBody(groundRBCI);
     groundBody->setUserPointer(mSceneMgr->getSceneNode("Ground"));
     groundBody->setRestitution(0.8f);
