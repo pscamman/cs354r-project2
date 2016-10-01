@@ -169,6 +169,10 @@ extern Uint8*        wav_buffer; // buffer containing our audio file
 extern Uint32        wav_length; // length of our sample
 extern SDL_AudioSpec wav_spec; // the specs of our piece of music
 
+void my_audio_callback(void *userdata, Uint8 *stream, int len);
+
+void playSound();
+
 //---------------------------------------------------------------------------
 
 #endif // #ifndef __BaseApplication_h_

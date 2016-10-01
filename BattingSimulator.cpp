@@ -130,24 +130,6 @@ void BattingSimulator::createScene(void)
 }
 //---------------------------------------------------------------------------
 
-// audio callback function
-// here you have to copy the data of your audio buffer into the
-// requesting audio buffer (stream)
-// you should only copy as much as the requested length (len)
-void my_audio_callback(void *userdata, Uint8 *stream, int len)
-{
-
-    if (audio_len ==0)
-        return;
-
-    len = ( len > audio_len ? audio_len : len );
-    //SDL_memcpy (stream, audio_pos, len);                  // simply copy from one buffer into the other
-    SDL_MixAudio(stream, audio_pos, len, SDL_MIX_MAXVOLUME);// mix from one buffer into another
-
-    audio_pos += len;
-    audio_len -= len;
-}
-
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 #define WIN32_LEAN_AND_MEAN
 #include "windows.h"
@@ -186,19 +168,6 @@ extern "C" {
             exit(-1);
         }
 
-        /* Start playing */
-        SDL_PauseAudio(0);
-
-        // wait until we're done playing
-        while(audio_len > 0)
-        {
-            SDL_Delay(100);
-        }
-
-        // shut everything down
-        SDL_CloseAudio();
-        SDL_FreeWAV(wav_buffer);
-
         // Create application object
         BattingSimulator app;
 
@@ -212,6 +181,16 @@ extern "C" {
                 e.getFullDescription().c_str() << std::endl;
 #endif
         }
+
+        // wait until we're done playing
+        while(audio_len > 0)
+        {
+            SDL_Delay(100);
+        }
+
+        // shut everything down
+        SDL_CloseAudio();
+        SDL_FreeWAV(wav_buffer);
 
         return 0;
     }

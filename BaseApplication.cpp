@@ -462,6 +462,7 @@ bool BaseApplication::mouseMoved(const OIS::MouseEvent &arg)
 //---------------------------------------------------------------------------
 bool BaseApplication::mousePressed(const OIS::MouseEvent &arg, OIS::MouseButtonID id)
 {
+    playSound();
     Ogre::Entity*    ent;
     Ogre::SceneNode* sphereNode;
     Ogre::Vector3    pos = testNode->getPosition();
@@ -532,4 +533,30 @@ void BaseApplication::windowClosed(Ogre::RenderWindow* rw)
         }
     }
 }
+
+// audio callback function
+// here you have to copy the data of your audio buffer into the
+// requesting audio buffer (stream)
+// you should only copy as much as the requested length (len)
+void my_audio_callback(void *userdata, Uint8 *stream, int len)
+{
+
+    if (audio_len ==0)
+        return;
+
+    len = ( len > audio_len ? audio_len : len );
+    //SDL_memcpy (stream, audio_pos, len);                  // simply copy from one buffer into the other
+    SDL_MixAudio(stream, audio_pos, len, SDL_MIX_MAXVOLUME);// mix from one buffer into another
+
+    audio_pos += len;
+    audio_len -= len;
+}
+
+void playSound()
+{
+    audio_pos = wav_buffer;
+    audio_len = wav_length;
+    SDL_PauseAudio(0);
+}
+
 //---------------------------------------------------------------------------
