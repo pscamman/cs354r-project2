@@ -38,11 +38,11 @@ http://www.ogre3d.org/wiki/
 #include <OgreVector3.h>
 
 // stl
-#include <cmath>         /* abs, pow    */
-#include <string>        /* to_string   */
-#include <stdlib.h>      /* srand, rand */
-#include <time.h>        /* time        */
-#include <vector>        /* vector      */
+#include <cmath>         /* abs, pow, sqrt  */
+#include <string>        /* to_string       */
+#include <stdlib.h>      /* srand, rand     */
+#include <time.h>        /* time            */
+#include <vector>        /* vector          */
 
 // SDL
 #include "SDL/SDL.h"
@@ -161,6 +161,7 @@ protected:
 #endif
 };
 
+extern Ogre::SceneNode* testNode;
 
 extern Uint8*        audio_pos; // global pointer to the audio buffer to be played
 extern Uint32        audio_len; // remaining length of the sample we have to play

@@ -170,14 +170,14 @@ void BaseApplication::destroyScene(void)
         delete rb->getMotionState();
         delete rb->getCollisionShape();
         delete rb;
-    }   
+    }
     for(int i = 0; i < environment.size(); i++){
         btRigidBody* rb = environment.at(i);
         bWorld->removeRigidBody(rb);
         delete rb->getMotionState();
         delete rb->getCollisionShape();
         delete rb;
-    }   
+    }
 }
 //---------------------------------------------------------------------------
 void BaseApplication::createViewports(void)
@@ -301,7 +301,7 @@ bool BaseApplication::setup(void)
     createBulletSim();
     // Create the scene
     createScene();
-    
+
     createFrameListener();
 
     return true;
@@ -324,11 +324,10 @@ bool BaseApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
         for(int i = 0; i < rigidBodies.size(); i++){
             btRigidBody* rb = rigidBodies.at(i);
             rb->getMotionState()->getWorldTransform(trans);
-            std::cout << "height: " << trans.getOrigin().getY() << std::endl;
             Ogre::SceneNode *sn = static_cast<Ogre::SceneNode *> (rb->getUserPointer());
             sn->setPosition(trans.getOrigin().getX(),trans.getOrigin().getY(),trans.getOrigin().getZ());
 
-        }   
+        }
 
 
     mTrayMgr->frameRenderingQueued(evt);
@@ -453,15 +452,48 @@ bool BaseApplication::keyReleased(const OIS::KeyEvent &arg)
 //---------------------------------------------------------------------------
 bool BaseApplication::mouseMoved(const OIS::MouseEvent &arg)
 {
-    if (mTrayMgr->injectMouseMove(arg)) return true;
-    mCameraMan->injectMouseMove(arg);
+    testNode->translate(arg.state.X.rel*0.25f, -arg.state.Y.rel*0.25f, 0);
+    mCamera->lookAt(testNode->getPosition());
+
+    //if (mTrayMgr->injectMouseMove(arg)) return true;
+    //mCameraMan->injectMouseMove(arg);
     return true;
 }
 //---------------------------------------------------------------------------
 bool BaseApplication::mousePressed(const OIS::MouseEvent &arg, OIS::MouseButtonID id)
 {
-    if (mTrayMgr->injectMouseDown(arg, id)) return true;
-    mCameraMan->injectMouseDown(arg, id);
+    Ogre::Entity*    ent;
+    Ogre::SceneNode* sphereNode;
+    Ogre::Vector3    pos = testNode->getPosition();
+    Ogre::Vector3    cam = mCamera ->getPosition();
+    Ogre::Real       hyp = sqrt(pos.x*pos.x + (pos.y-cam.y)*(pos.y-cam.y) + cam.z*cam.z);
+    static int i = -1;
+    ent = mSceneMgr->createEntity("sphere" + std::to_string(++i), Ogre::SceneManager::PT_SPHERE);
+    ent->setMaterialName("Core/StatsBlockBorder/Up");
+    ent->setCastShadows(true);
+    sphereNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
+    sphereNode->setPosition(pos);
+    sphereNode->setScale(.38, .38, .38);
+    sphereNode->attachObject(ent);
+
+    btCollisionShape* ballShape =  new btSphereShape(1);
+    btDefaultMotionState* ballMotionState =
+        new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1),
+                                 btVector3(pos.x, pos.y, pos.z)));
+    btScalar bmass (1.0);
+        btVector3 fallInertia(0, 0, 0);
+        ballShape->calculateLocalInertia(bmass, fallInertia);
+    btRigidBody::btRigidBodyConstructionInfo ballRBCI(bmass, ballMotionState,ballShape,fallInertia);
+    btRigidBody* ballBody = new btRigidBody(ballRBCI);
+    Ogre::Real v = 500;
+    ballBody->setLinearVelocity(btVector3(pos.x*v/hyp,(pos.y-cam.y)*v/hyp,-cam.z*v/hyp));
+    ballBody->setUserPointer(sphereNode);
+    ballBody->setRestitution(0.8f);
+    bWorld->addRigidBody(ballBody);
+    rigidBodies.push_back(ballBody);
+
+    //if (mTrayMgr->injectMouseDown(arg, id)) return true;
+    //mCameraMan->injectMouseDown(arg, id);
     return true;
 }
 //---------------------------------------------------------------------------

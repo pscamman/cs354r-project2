@@ -24,6 +24,8 @@ Uint8*        wav_buffer; // buffer containing our audio file
 Uint32        wav_length; // length of our sample
 SDL_AudioSpec wav_spec;   // the specs of our piece of music
 
+Ogre::SceneNode* testNode;
+
 //---------------------------------------------------------------------------
 BattingSimulator::BattingSimulator(void)
 {
@@ -49,139 +51,82 @@ void BattingSimulator::createScene(void)
     light->setPosition(20, 80, 50);
     light->setCastShadows(false);
     light->setDiffuseColour(ColourValue(0.4, 0.4, 0.4));
-    // light = mSceneMgr->createLight("MainLight3");
-    // light->setPosition(199, 199, -199);
-    // light->setCastShadows(true);
-    // light->setDiffuseColour(ColourValue(0.8, 0, 0));
-    // light = mSceneMgr->createLight("MainLight4");
-    // light->setPosition(-199, 199, -199);
-    // light->setCastShadows(true);
-    // light->setDiffuseColour(ColourValue(0.8, 0, 0));
 
-    mCamera->setPosition(Vector3(600, 600, 400));
-    mCamera->lookAt(Vector3(50, 0, -50));
+    mCamera->setPosition(Vector3(0, 500, 500));
 
-    // // Create the meshes
+    // Create the ground mesh
     Plane p;
     p.normal = Vector3::UNIT_Y;
-    p.d = 200;
+    p.d = 0;
     MeshManager::getSingleton().createPlane("FloorPlane",
         ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
-        p,1500,1500,1,1,true,1,5,5,Vector3::UNIT_Z);
+        p,10000,10000,1,1,true,1,5,5,Vector3::UNIT_Z);
 
-    // p.normal = Vector3::NEGATIVE_UNIT_Y;
-    // p.d = 200;
-    // MeshManager::getSingleton().createPlane("CeilPlane",
-    //     ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
-    //     p,400,400,1,1,true,1,5,5,Vector3::NEGATIVE_UNIT_Z);
-
-    // p.normal = Vector3::UNIT_Z;
-    // p.d = 200;
-    // MeshManager::getSingleton().createPlane("WallPlaneN",
-    //     ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
-    //     p,400,400,1,1,true,1,5,5,Vector3::UNIT_Y);
-
-    // p.normal = Vector3::NEGATIVE_UNIT_X;
-    // p.d = 200;
-    // MeshManager::getSingleton().createPlane("WallPlaneE",
-    //     ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
-    //     p,400,400,1,1,true,1,5,5,Vector3::UNIT_Y);
-
-    // p.normal = Vector3::NEGATIVE_UNIT_Z;
-    // p.d = 200;
-    // MeshManager::getSingleton().createPlane("WallPlaneS",
-    //     ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
-    //     p,400,400,1,1,true,1,5,5,Vector3::UNIT_Y);
-
-    // p.normal = Vector3::UNIT_X;
-    // p.d = 200;
-    // MeshManager::getSingleton().createPlane("WallPlaneW",
-    //     ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
-    //     p,400,400,1,1,true,1,5,5,Vector3::UNIT_Y);
-
-    // // Create the entities
+    // Create the entities, scene nodes, and bullet objects
     Entity*    ent;
+    SceneNode* node;
     String matString = "Core/StatsBlockBorder/Up";
 
+    // create non-physical mouse interactive object
+    ent = mSceneMgr->createEntity("MOUSE_TEST", Ogre::SceneManager::PT_SPHERE);
+    ent->setMaterialName(matString);
+    ent->setCastShadows(true);
+    testNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
+    testNode->setPosition(0, 500, 0);
+    testNode->setScale(.19, .19, .19);
+    testNode->attachObject(ent);
+
+    // create ground
     ent = mSceneMgr->createEntity("floor", "FloorPlane");
     ent->setMaterialName("Examples/Rockwall");
     ent->setCastShadows(false);
     mSceneMgr->getRootSceneNode()->createChildSceneNode("Ground")->attachObject(ent);
 
-    // ent = mSceneMgr->createEntity("ceil", "CeilPlane");
-    // ent->setMaterialName(matString);
-    // ent->setCastShadows(false);
-    // rootNode->attachObject(ent);
-
-    // ent = mSceneMgr->createEntity("wallN", "WallPlaneN");
-    // ent->setMaterialName(matString);
-    // ent->setCastShadows(false);
-    // rootNode->attachObject(ent);
-
-    // ent = mSceneMgr->createEntity("wallE", "WallPlaneE");
-    // ent->setMaterialName(matString);
-    // ent->setCastShadows(false);
-    // rootNode->attachObject(ent);
-
-    // ent = mSceneMgr->createEntity("wallS", "WallPlaneS");
-    // ent->setMaterialName(matString);
-    // ent->setCastShadows(false);
-    // rootNode->attachObject(ent);
-
-    // ent = mSceneMgr->createEntity("wallW", "WallPlaneW");
-    // ent->setMaterialName(matString);
-    // ent->setCastShadows(false);
-    // rootNode->attachObject(ent);
-
-    // ent = mSceneMgr->createEntity("ogrehead.mesh");
-    // ogreNode->attachObject(ent);
-    SceneNode* sphereNode;
-    ent = mSceneMgr->createEntity("sphere", Ogre::SceneManager::PT_SPHERE);
-    ent->setMaterialName(matString);
-    ent->setCastShadows(true);
-    sphereNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
-    sphereNode->setPosition(0, 50, 0);
-    // sphereNode->setScale(.38, .38, .38);
-    sphereNode->attachObject(ent);
-
-
-
-     ///create a few basic rigid bodies
-     // start with ground plane, 1500, 1500
-    btCollisionShape* groundShape = new btStaticPlaneShape(btVector3(0, 1, 0), -200);
+    btCollisionShape* groundShape = new btStaticPlaneShape(btVector3(0, 1, 0), 0);
     btTransform groundTransform;
     groundTransform.setIdentity();
-    groundTransform.setOrigin(btVector3(0,-200,0));    
+    groundTransform.setOrigin(btVector3(0,0,0));
     btScalar mass(0.0);
-    //rigidbody is dynamic if and only if mass is non zero, otherwise static
-    // lathe - this plane isnt going to be moving so i dont care about setting the motion state
-    //using motionstate is recommended, it provides interpolation capabilities, and only synchronizes 'active' objects
-    btDefaultMotionState* myMotionState = new btDefaultMotionState(btTransform(btQuaternion(0,0,0,1), btVector3(0,10,0)));
-
-    btRigidBody::btRigidBodyConstructionInfo groundRigidBodyCI(mass, myMotionState, groundShape, btVector3(0, 0, 0));    
-    btRigidBody* groundBody = new btRigidBody(groundRigidBodyCI);
+    // rigidbody is dynamic if and only if mass is non zero, otherwise static
+    // lathe - this plane isnt going to be moving so i dont care about setting the motion state.
+    // using motionstate is recommended, it provides interpolation capabilities,
+    // and only synchronizes 'active' objects.
+    btDefaultMotionState* myMotionState = new btDefaultMotionState(btTransform(btQuaternion(0,0,0,1),
+                                                                   btVector3(0,10,0)));
+    btRigidBody::btRigidBodyConstructionInfo groundRBCI(mass, myMotionState, groundShape,
+                                                               btVector3(0, 0, 0));
+    btRigidBody* groundBody = new btRigidBody(groundRBCI);
     groundBody->setUserPointer(mSceneMgr->getSceneNode("Ground"));
-    groundBody->setRestitution(0.5f);
+    groundBody->setRestitution(0.8f);
     //add the body to the dynamics world
-    // std::cout << bWorld << std::endl;
     bWorld->addRigidBody(groundBody);
     environment.push_back(groundBody);
 
-    // create a ball
-    btCollisionShape* ballShape =  new btSphereShape(1);
-    btDefaultMotionState* ballMotionState =
-                new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(0, 750, 0)));
-    btScalar bmass (1.0);
-        btVector3 fallInertia(0, 0, 0);
-        ballShape->calculateLocalInertia(bmass, fallInertia);
-    btRigidBody::btRigidBodyConstructionInfo ballRBCI(bmass, ballMotionState,ballShape,fallInertia);
-    btRigidBody* ballBody = new btRigidBody(ballRBCI);
-    // ballBody->setLinearVelocity(btVector3(30,0,0) );
-    ballBody->setUserPointer(sphereNode);
-    ballBody->setRestitution(0.8f);
-    bWorld->addRigidBody(ballBody);
-    rigidBodies.push_back(ballBody);
+    // create target blocks
+    for(int i = -2; i < 3; ++i)
+        for(int j = 0; j < 6; ++j)
+        {
+            ent = mSceneMgr->createEntity(Ogre::SceneManager::PT_CUBE);
+            ent->setMaterialName(matString);
+            ent->setCastShadows(true);
+            node = mSceneMgr->getRootSceneNode()->createChildSceneNode();
+            node->setPosition(i*100, j*100, -500);
+            node->attachObject(ent);
 
+            btCollisionShape* blockShape =  new btBoxShape(btVector3(50.0f,50.0f,50.0f));
+            btDefaultMotionState* blockMotionState =
+                        new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1),
+                                                 btVector3(i*100, j*100+25, -500)));
+            btScalar bmass (10.0);
+            btVector3 fallInertia(0, 0, 0);
+            blockShape->calculateLocalInertia(bmass, fallInertia);
+            btRigidBody::btRigidBodyConstructionInfo blockRBCI(bmass, blockMotionState,blockShape,fallInertia);
+            btRigidBody* blockBody = new btRigidBody(blockRBCI);
+            blockBody->setUserPointer(node);
+            blockBody->setRestitution(0.8f);
+            bWorld->addRigidBody(blockBody);
+            rigidBodies.push_back(blockBody);
+        }
 }
 //---------------------------------------------------------------------------
 
@@ -244,7 +189,7 @@ extern "C" {
         /* Start playing */
         SDL_PauseAudio(0);
 
-        // wait until we're don't playing
+        // wait until we're done playing
         while(audio_len > 0)
         {
             SDL_Delay(100);
