@@ -23,7 +23,7 @@ http://www.ogre3d.org/wiki/
 #endif
 
 #ifndef BT_TIMESTEP
-#define BT_TIMESTEP 1.0f/60.0f
+#define BT_TIMESTEP 1.0f/100.0f
 #endif
 
 #include <OgreCamera.h>
@@ -137,9 +137,10 @@ protected:
     Ogre::SceneNode* testNode;
     Ogre::SceneNode* batNode;
 
-    int  charge;
-    bool batCharge;
-    bool batSwing;
+    float charge;
+    float swing;
+    bool  batCharge;
+    bool  batSwing;
 
     Ogre::OverlaySystem*        mOverlaySystem;
 

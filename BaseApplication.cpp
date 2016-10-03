@@ -38,7 +38,7 @@ BaseApplication::BaseApplication(void)
     mMouse(0),
     mKeyboard(0),
     mOverlaySystem(0),
-    charge(0),
+    charge(200.0f),
     batCharge(false),
     batSwing(false)
 {
@@ -324,23 +324,22 @@ bool BaseApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
     mMouse->capture();
 
     bWorld->stepSimulation(BT_TIMESTEP, 10);
-        btTransform trans;
-        for(int i = 0; i < rigidBodies.size(); i++)
-        {
-            btRigidBody* rb = rigidBodies.at(i);
-            rb->getMotionState()->getWorldTransform(trans);
-            Ogre::SceneNode *sn = static_cast<Ogre::SceneNode *> (rb->getUserPointer());
-            auto origin = trans.getOrigin();
-            sn->setPosition(origin.getX(),
-                            origin.getY(),
-                            origin.getZ());
-            auto orient = rb->getOrientation();
-            sn->setOrientation(orient.getW(),
-                               orient.getX(),
-                               orient.getY(),
-                               orient.getZ());
-        }
-
+    btTransform trans;
+    for(int i = 0; i < rigidBodies.size(); i++)
+    {
+        btRigidBody* rb = rigidBodies.at(i);
+        rb->getMotionState()->getWorldTransform(trans);
+        Ogre::SceneNode *sn = static_cast<Ogre::SceneNode *> (rb->getUserPointer());
+        auto origin = trans.getOrigin();
+        sn->setPosition(origin.getX(),
+                        origin.getY(),
+                        origin.getZ());
+        auto orient = rb->getOrientation();
+        sn->setOrientation(orient.getW(),
+                           orient.getX(),
+                           orient.getY(),
+                           orient.getZ());
+    }
 
     mTrayMgr->frameRenderingQueued(evt);
 
@@ -474,39 +473,12 @@ bool BaseApplication::mouseMoved(const OIS::MouseEvent &arg)
 //---------------------------------------------------------------------------
 bool BaseApplication::mousePressed(const OIS::MouseEvent &arg, OIS::MouseButtonID id)
 {
-    playSound();
-    Ogre::Entity*    ent;
-    Ogre::SceneNode* sphereNode;
-    Ogre::Vector3    pos = testNode->getPosition();
-    Ogre::Vector3    cam = mCamera ->getPosition();
-    Ogre::Real       hyp = sqrt(pos.x*pos.x + (pos.y-cam.y)*(pos.y-cam.y) + cam.z*cam.z);
-    static int i = -1;
-    ent = mSceneMgr->createEntity("sphere" + std::to_string(++i), Ogre::SceneManager::PT_SPHERE);
-    ent->setMaterialName("Core/StatsBlockBorder/Up");
-    ent->setCastShadows(true);
-    sphereNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
-    sphereNode->setPosition(pos);
-    sphereNode->setScale(.38, .38, .38);
-    sphereNode->attachObject(ent);
-
-    btCollisionShape* ballShape =  new btSphereShape(38);
-    btDefaultMotionState* ballMotionState =
-        new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1),
-                                 btVector3(pos.x, pos.y, pos.z)));
-    btScalar bmass (1.0);
-        btVector3 fallInertia(0, 0, 0);
-        ballShape->calculateLocalInertia(bmass, fallInertia);
-    btRigidBody::btRigidBodyConstructionInfo ballRBCI(bmass, ballMotionState,ballShape,fallInertia);
-    btRigidBody* ballBody = new btRigidBody(ballRBCI);
-    Ogre::Real v = 500;
-    ballBody->setLinearVelocity(btVector3(pos.x*v/hyp,(pos.y-cam.y)*v/hyp,-cam.z*v/hyp));
-    ballBody->setUserPointer(sphereNode);
-    ballBody->setRestitution(0.8f);
-    bWorld->addRigidBody(ballBody);
-    rigidBodies.push_back(ballBody);
 
     if(!batSwing)
+    {
+        playSound();
         batCharge = true;
+    }
 
     //if (mTrayMgr->injectMouseDown(arg, id)) return true;
     //mCameraMan->injectMouseDown(arg, id);
@@ -523,8 +495,6 @@ bool BaseApplication::mouseReleased(const OIS::MouseEvent &arg, OIS::MouseButton
         batCharge = false;
         batSwing  = true;
     }
-
-    return true;
 }
 //---------------------------------------------------------------------------
 // Adjust mouse clipping area
@@ -560,7 +530,57 @@ void BaseApplication::windowClosed(Ogre::RenderWindow* rw)
 void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
 {
     if(bApp->batCharge)
-        ++(bApp->charge);
+        bApp->charge += timeStep;
+
+    if(bApp->batSwing)
+    {
+        bApp->swing  += timeStep;
+        Ogre::Entity* ballEnt = static_cast<Ogre::Entity*>(bApp->testNode->getAttachedObject(0));
+        if(bApp->swing < 1.0f)
+        {
+            bApp->batNode->pitch(Ogre::Radian(Ogre::Real(2*3.1415927*timeStep)));
+            if(ballEnt->getVisible() and bApp->swing > 0.2f)
+            {
+                ballEnt->setVisible(false);
+                Ogre::Entity*    ent;
+                Ogre::SceneNode* sphereNode;
+                Ogre::Vector3    pos = bApp->testNode->getPosition();
+                Ogre::Vector3    cam = bApp->mCamera ->getPosition();
+                float            hyp = sqrt(pos.x*pos.x + (pos.y-cam.y)*(pos.y-cam.y) + cam.z*cam.z);
+                static int i = -1;
+                ent = bApp->mSceneMgr->createEntity("sphere" + std::to_string(++i), Ogre::SceneManager::PT_SPHERE);
+                ent->setMaterialName("Core/StatsBlockBorder/Up");
+                ent->setCastShadows(true);
+                sphereNode = bApp->mSceneMgr->getRootSceneNode()->createChildSceneNode();
+                sphereNode->setPosition(pos);
+                sphereNode->setScale(.38, .38, .38);
+                sphereNode->attachObject(ent);
+
+                btCollisionShape* ballShape =  new btSphereShape(38);
+                btDefaultMotionState* ballMotionState =
+                    new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1),
+                                             btVector3(pos.x, pos.y, pos.z)));
+                btScalar bmass (1.0);
+                btVector3 fallInertia(0, 0, 0);
+                ballShape->calculateLocalInertia(bmass, fallInertia);
+                btRigidBody::btRigidBodyConstructionInfo ballRBCI(bmass, ballMotionState,ballShape,fallInertia);
+                btRigidBody* ballBody = new btRigidBody(ballRBCI);
+                float v = std::min(700.0f, 100.0f*(bApp->charge));
+                ballBody->setLinearVelocity(btVector3(pos.x*v/hyp,(pos.y-cam.y)*v/hyp,-cam.z*v/hyp));
+                ballBody->setUserPointer(sphereNode);
+                ballBody->setRestitution(0.8f);
+                bApp->bWorld->addRigidBody(ballBody);
+                bApp->rigidBodies.push_back(ballBody);
+            }
+        }
+        else
+        {
+            bApp->charge = 200.0f;
+            bApp->swing = 0.0f;
+            bApp->batSwing = false;
+            ballEnt->setVisible(true);
+        }
+    }
 }
 
 //---------------------------------------------------------------------------

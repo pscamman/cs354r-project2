@@ -73,7 +73,7 @@ void BattingSimulator::createScene(void)
     ent->setCastShadows(true);
     testNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
     testNode->setPosition(0, 500, 0);
-    testNode->setScale(.19, .19, .19);
+    testNode->setScale(.38, .38, .38);
     testNode->attachObject(ent);
 
     // create ground
@@ -130,12 +130,15 @@ void BattingSimulator::createScene(void)
         }
 
     ent = mSceneMgr->createEntity("Círculo.005.mesh");
+    ent->setMaterialName("Ogre/Earring");
     ent->setCastShadows(false);
 
     batNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
-    batNode->setPosition(0,400,0);
+    batNode->setPosition(-150,430,100);
     batNode->setScale(7,7,7);
     batNode->attachObject(ent);
+    batNode->roll (Radian(Real(2)), Node::TransformSpace::TS_LOCAL);
+    batNode->pitch(Radian(Real(-1)), Node::TransformSpace::TS_LOCAL);
 }
 //---------------------------------------------------------------------------
 
