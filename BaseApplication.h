@@ -22,6 +22,10 @@ http://www.ogre3d.org/wiki/
 #define SOUND_PATH "Bell.wav"
 #endif
 
+#ifndef BT_TIMESTEP
+#define BT_TIMESTEP 1.0f/60.0f
+#endif
+
 #include <OgreCamera.h>
 #include <OgreEntity.h>
 #include <OgreLogManager.h>
@@ -130,6 +134,12 @@ protected:
     Ogre::String                mResourcesCfg;
     Ogre::String                mPluginsCfg;
 
+    Ogre::SceneNode* testNode;
+    Ogre::SceneNode* batNode;
+
+    bool batCharge;
+    bool batSwing;
+
     Ogre::OverlaySystem*        mOverlaySystem;
 
     // OgreBites
@@ -162,8 +172,6 @@ protected:
 #endif
 };
 
-extern Ogre::SceneNode* testNode;
-extern Ogre::SceneNode* batNode;
 
 extern Uint8*        audio_pos; // global pointer to the audio buffer to be played
 extern Uint32        audio_len; // remaining length of the sample we have to play

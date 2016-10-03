@@ -23,9 +23,6 @@ Uint32        audio_len;  // remaining length of the sample we have to play
 Uint8*        wav_buffer; // buffer containing our audio file
 Uint32        wav_length; // length of our sample
 SDL_AudioSpec wav_spec;   // the specs of our piece of music
-
-Ogre::SceneNode* testNode;
-Ogre::SceneNode* batNode;
 //---------------------------------------------------------------------------
 BattingSimulator::BattingSimulator(void)
 {

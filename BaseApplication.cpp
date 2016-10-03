@@ -37,7 +37,9 @@ BaseApplication::BaseApplication(void)
     mInputManager(0),
     mMouse(0),
     mKeyboard(0),
-    mOverlaySystem(0)
+    mOverlaySystem(0),
+    batCharge(false),
+    batSwing(false)
 {
 #if OGRE_PLATFORM == OGRE_PLATFORM_APPLE
     m_ResourcePath = Ogre::macBundlePath() + "/Contents/Resources/";
@@ -319,7 +321,7 @@ bool BaseApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
     mKeyboard->capture();
     mMouse->capture();
 
-    bWorld->stepSimulation(1 / 60.f, 10);
+    bWorld->stepSimulation(BT_TIMESTEP, 10);
         btTransform trans;
         for(int i = 0; i < rigidBodies.size(); i++)
         {
@@ -448,7 +450,7 @@ bool BaseApplication::keyPressed( const OIS::KeyEvent &arg )
         mShutDown = true;
     }
 
-    mCameraMan->injectKeyDown(arg);
+    //mCameraMan->injectKeyDown(arg);
     return true;
 }
 //---------------------------------------------------------------------------
@@ -485,7 +487,7 @@ bool BaseApplication::mousePressed(const OIS::MouseEvent &arg, OIS::MouseButtonI
     sphereNode->setScale(.38, .38, .38);
     sphereNode->attachObject(ent);
 
-    btCollisionShape* ballShape =  new btSphereShape(1);
+    btCollisionShape* ballShape =  new btSphereShape(38);
     btDefaultMotionState* ballMotionState =
         new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1),
                                  btVector3(pos.x, pos.y, pos.z)));
@@ -501,6 +503,9 @@ bool BaseApplication::mousePressed(const OIS::MouseEvent &arg, OIS::MouseButtonI
     bWorld->addRigidBody(ballBody);
     rigidBodies.push_back(ballBody);
 
+    if(!batSwing)
+        batCharge = true;
+
     //if (mTrayMgr->injectMouseDown(arg, id)) return true;
     //mCameraMan->injectMouseDown(arg, id);
     return true;
@@ -510,6 +515,13 @@ bool BaseApplication::mouseReleased(const OIS::MouseEvent &arg, OIS::MouseButton
 {
     if (mTrayMgr->injectMouseUp(arg, id)) return true;
     mCameraMan->injectMouseUp(arg, id);
+
+    if(batCharge)
+    {
+        batCharge = false;
+        batSwing  = true;
+    }
+
     return true;
 }
 //---------------------------------------------------------------------------
