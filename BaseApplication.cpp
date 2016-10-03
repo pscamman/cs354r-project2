@@ -38,6 +38,7 @@ BaseApplication::BaseApplication(void)
     mMouse(0),
     mKeyboard(0),
     mOverlaySystem(0),
+    charge(0),
     batCharge(false),
     batSwing(false)
 {
@@ -241,6 +242,7 @@ void BaseApplication::createBulletSim(void) {
          bWorld = new btDiscreteDynamicsWorld(dispatcher,overlappingPairCache,solver,collisionConfiguration);
          bWorld->setGravity(btVector3(0,-10,0));
 
+         bWorld->setInternalTickCallback(bulletCallback);
     }
 //---------------------------------------------------------------------------
 void BaseApplication::createResourceListener(void)
@@ -299,7 +301,7 @@ bool BaseApplication::setup(void)
     createResourceListener();
     // Load resources
     loadResources();
-    // Create Bullet world
+    // Create Bullet world and hook callback in
     createBulletSim();
     // Create the scene
     createScene();
@@ -462,8 +464,8 @@ bool BaseApplication::keyReleased(const OIS::KeyEvent &arg)
 //---------------------------------------------------------------------------
 bool BaseApplication::mouseMoved(const OIS::MouseEvent &arg)
 {
-    batNode->translate(arg.state.X.rel*0.25f, -arg.state.Y.rel*0.25f, 0);
-    mCamera->lookAt(testNode->getPosition());
+    // batNode->translate(arg.state.X.rel*0.25f, -arg.state.Y.rel*0.25f, 0);
+    // mCamera->lookAt(testNode->getPosition());
 
     // if (mTrayMgr->injectMouseMove(arg)) return true;
     // mCameraMan->injectMouseMove(arg);
@@ -553,7 +555,15 @@ void BaseApplication::windowClosed(Ogre::RenderWindow* rw)
         }
     }
 }
+//---------------------------------------------------------------------------
+//callback to have handle on bullet time
+void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
+{
+    if(bApp->batCharge)
+        ++(bApp->charge);
+}
 
+//---------------------------------------------------------------------------
 // audio callback function
 // here you have to copy the data of your audio buffer into the
 // requesting audio buffer (stream)

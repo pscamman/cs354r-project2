@@ -18,6 +18,8 @@ http://www.ogre3d.org/wiki/
 #include "BattingSimulator.h"
 
 // globals, extern variables from BaseApplication.h
+BaseApplication* bApp;
+
 Uint8*        audio_pos;  // global pointer to the audio buffer to be played
 Uint32        audio_len;  // remaining length of the sample we have to play
 Uint8*        wav_buffer; // buffer containing our audio file
@@ -177,6 +179,7 @@ extern "C" {
 
         // Create application object
         BattingSimulator app;
+        bApp = &app;
 
         try {
             app.go();

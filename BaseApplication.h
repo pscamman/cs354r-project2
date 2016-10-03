@@ -137,6 +137,7 @@ protected:
     Ogre::SceneNode* testNode;
     Ogre::SceneNode* batNode;
 
+    int  charge;
     bool batCharge;
     bool batSwing;
 
@@ -170,8 +171,14 @@ protected:
 #ifdef OGRE_STATIC_LIB
     Ogre::StaticPluginLoader m_StaticPluginLoader;
 #endif
+
+public:
+    friend void bulletCallback(btDynamicsWorld *world, btScalar timeStep);
 };
 
+void bulletCallback(btDynamicsWorld *world, btScalar timeStep);
+
+extern BaseApplication* bApp;
 
 extern Uint8*        audio_pos; // global pointer to the audio buffer to be played
 extern Uint32        audio_len; // remaining length of the sample we have to play
