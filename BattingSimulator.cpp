@@ -25,7 +25,7 @@ Uint32        wav_length; // length of our sample
 SDL_AudioSpec wav_spec;   // the specs of our piece of music
 
 Ogre::SceneNode* testNode;
-
+Ogre::SceneNode* batNode;
 //---------------------------------------------------------------------------
 BattingSimulator::BattingSimulator(void)
 {
@@ -53,6 +53,7 @@ void BattingSimulator::createScene(void)
     light->setDiffuseColour(ColourValue(0.4, 0.4, 0.4));
 
     mCamera->setPosition(Vector3(0, 500, 500));
+    mSceneMgr->setSkyDome(true, "Examples/CloudySky", 5, 8);
 
     // Create the ground mesh
     Plane p;
@@ -128,6 +129,14 @@ void BattingSimulator::createScene(void)
             bWorld->addRigidBody(blockBody);
             rigidBodies.push_back(blockBody);
         }
+
+    ent = mSceneMgr->createEntity("Círculo.005.mesh");
+    ent->setCastShadows(false);
+
+    batNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
+    batNode->setPosition(0,400,0);
+    batNode->setScale(7,7,7);
+    batNode->attachObject(ent);
 }
 //---------------------------------------------------------------------------
 

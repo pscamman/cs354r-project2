@@ -460,11 +460,11 @@ bool BaseApplication::keyReleased(const OIS::KeyEvent &arg)
 //---------------------------------------------------------------------------
 bool BaseApplication::mouseMoved(const OIS::MouseEvent &arg)
 {
-    testNode->translate(arg.state.X.rel*0.25f, -arg.state.Y.rel*0.25f, 0);
+    batNode->translate(arg.state.X.rel*0.25f, -arg.state.Y.rel*0.25f, 0);
     mCamera->lookAt(testNode->getPosition());
 
-    //if (mTrayMgr->injectMouseMove(arg)) return true;
-    //mCameraMan->injectMouseMove(arg);
+    // if (mTrayMgr->injectMouseMove(arg)) return true;
+    // mCameraMan->injectMouseMove(arg);
     return true;
 }
 //---------------------------------------------------------------------------

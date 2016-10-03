@@ -155,6 +155,7 @@ protected:
     btDiscreteDynamicsWorld*                bWorld;
     btAlignedObjectArray<btRigidBody*> rigidBodies;
     btAlignedObjectArray<btRigidBody*> environment;
+    // btRigidBody* batRigidBody;
 
 #ifdef OGRE_STATIC_LIB
     Ogre::StaticPluginLoader m_StaticPluginLoader;
@@ -162,6 +163,7 @@ protected:
 };
 
 extern Ogre::SceneNode* testNode;
+extern Ogre::SceneNode* batNode;
 
 extern Uint8*        audio_pos; // global pointer to the audio buffer to be played
 extern Uint32        audio_len; // remaining length of the sample we have to play
