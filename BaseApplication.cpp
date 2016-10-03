@@ -38,9 +38,10 @@ BaseApplication::BaseApplication(void)
     mMouse(0),
     mKeyboard(0),
     mOverlaySystem(0),
-    charge(200.0f),
+    charge(0),
     batCharge(false),
-    batSwing(false)
+    batSwing(false),
+    cameraVelocity(Ogre::Vector3::ZERO)
 {
 #if OGRE_PLATFORM == OGRE_PLATFORM_APPLE
     m_ResourcePath = Ogre::macBundlePath() + "/Contents/Resources/";
@@ -340,6 +341,14 @@ bool BaseApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
                            orient.getY(),
                            orient.getZ());
     }
+    Ogre::Vector3 currentBallPos = testNode->getPosition();
+    currentBallPos += cameraVelocity * evt.timeSinceLastFrame;
+    testNode->setPosition(currentBallPos);
+    mCamera->setPosition(camNode->getPosition()+testNode->getPosition());
+    mCamera->lookAt(currentBallPos);
+
+    float scale = (4+charge)*7;
+    batNode->setScale(scale,scale,scale);
 
     mTrayMgr->frameRenderingQueued(evt);
 
@@ -357,6 +366,7 @@ bool BaseApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
             mDetailsPanel->setParamValue(7, Ogre::StringConverter::toString(mCamera->getDerivedOrientation().z));
         }
     }
+
 
     return true;
 }
@@ -450,21 +460,36 @@ bool BaseApplication::keyPressed( const OIS::KeyEvent &arg )
     {
         mShutDown = true;
     }
-
+    else if (arg.key == OIS::KC_W)
+        cameraVelocity.y = 100;
+    else if (arg.key == OIS::KC_S)
+        cameraVelocity.y = -100;
+    else if (arg.key == OIS::KC_A)
+        cameraVelocity.x = -100;
+    else if (arg.key == OIS::KC_D)
+        cameraVelocity.x = 100;
     //mCameraMan->injectKeyDown(arg);
     return true;
 }
 //---------------------------------------------------------------------------
 bool BaseApplication::keyReleased(const OIS::KeyEvent &arg)
 {
+    if (arg.key == OIS::KC_W)
+        cameraVelocity.y = 0;
+    else if (arg.key == OIS::KC_S)
+        cameraVelocity.y = 0;
+    else if (arg.key == OIS::KC_A)
+        cameraVelocity.x = 0;
+    else if (arg.key == OIS::KC_D)
+        cameraVelocity.x = 0;
     mCameraMan->injectKeyUp(arg);
     return true;
 }
 //---------------------------------------------------------------------------
 bool BaseApplication::mouseMoved(const OIS::MouseEvent &arg)
 {
-    // batNode->translate(arg.state.X.rel*0.25f, -arg.state.Y.rel*0.25f, 0);
-    // mCamera->lookAt(testNode->getPosition());
+    //batNode->translate(arg.state.X.rel*0.25f, -arg.state.Y.rel*0.25f, 0);
+    //mCamera->lookAt(testNode->getPosition());
 
     // if (mTrayMgr->injectMouseMove(arg)) return true;
     // mCameraMan->injectMouseMove(arg);
@@ -530,7 +555,11 @@ void BaseApplication::windowClosed(Ogre::RenderWindow* rw)
 void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
 {
     if(bApp->batCharge)
+    {
         bApp->charge += timeStep;
+        if(bApp->charge > 5.0f)
+            bApp->charge = 5.0f;
+    }
 
     if(bApp->batSwing)
     {
@@ -553,10 +582,10 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
                 ent->setCastShadows(true);
                 sphereNode = bApp->mSceneMgr->getRootSceneNode()->createChildSceneNode();
                 sphereNode->setPosition(pos);
-                sphereNode->setScale(.38, .38, .38);
+                sphereNode->setScale(.25, .25, .25);
                 sphereNode->attachObject(ent);
 
-                btCollisionShape* ballShape =  new btSphereShape(38);
+                btCollisionShape* ballShape =  new btSphereShape(25);
                 btDefaultMotionState* ballMotionState =
                     new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1),
                                              btVector3(pos.x, pos.y, pos.z)));
@@ -565,8 +594,9 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
                 ballShape->calculateLocalInertia(bmass, fallInertia);
                 btRigidBody::btRigidBodyConstructionInfo ballRBCI(bmass, ballMotionState,ballShape,fallInertia);
                 btRigidBody* ballBody = new btRigidBody(ballRBCI);
-                float v = std::min(700.0f, 100.0f*(bApp->charge));
-                ballBody->setLinearVelocity(btVector3(pos.x*v/hyp,(pos.y-cam.y)*v/hyp,-cam.z*v/hyp));
+                float v = std::min(1600.0f, 300.0f*(bApp->charge)+100.0f);
+                //ballBody->setLinearVelocity(btVector3(pos.x*v/hyp,(pos.y-cam.y)*v/hyp,-cam.z*v/hyp));
+                ballBody->setLinearVelocity(btVector3(0,0,-v));
                 ballBody->setUserPointer(sphereNode);
                 ballBody->setRestitution(0.8f);
                 bApp->bWorld->addRigidBody(ballBody);
@@ -575,8 +605,8 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
         }
         else
         {
-            bApp->charge = 200.0f;
-            bApp->swing = 0.0f;
+            bApp->charge = 0.0f;
+            bApp->swing  = 0.0f;
             bApp->batSwing = false;
             ballEnt->setVisible(true);
         }

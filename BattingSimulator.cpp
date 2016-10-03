@@ -51,7 +51,6 @@ void BattingSimulator::createScene(void)
     light->setCastShadows(false);
     light->setDiffuseColour(ColourValue(0.4, 0.4, 0.4));
 
-    mCamera->setPosition(Vector3(0, 500, 500));
     mSceneMgr->setSkyDome(true, "Examples/CloudySky", 5, 8);
 
     // Create the ground mesh
@@ -67,14 +66,29 @@ void BattingSimulator::createScene(void)
     SceneNode* node;
     String matString = "Core/StatsBlockBorder/Up";
 
-    // create non-physical mouse interactive object
-    ent = mSceneMgr->createEntity("MOUSE_TEST", Ogre::SceneManager::PT_SPHERE);
+    // create non-physical ball
+    ent = mSceneMgr->createEntity("ball", Ogre::SceneManager::PT_SPHERE);
     ent->setMaterialName(matString);
     ent->setCastShadows(true);
     testNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
     testNode->setPosition(0, 500, 0);
-    testNode->setScale(.38, .38, .38);
+    testNode->setScale(.25, .25, .25);
     testNode->attachObject(ent);
+
+    // create non-physical camera node as a child of ball
+    camNode = testNode->createChildSceneNode();
+    camNode->setPosition(0, 300, 1000);
+
+    // create non-physical bat as a child of ball
+    ent = mSceneMgr->createEntity("Círculo.005.mesh");
+    ent->setMaterialName("Examples/BumpyMetal");
+    ent->setCastShadows(false);
+    batNode = testNode->createChildSceneNode();
+    batNode->setPosition(-400,-200,100);
+    batNode->setScale(28,28,28);
+    batNode->attachObject(ent);
+    batNode->roll (Radian(Real(2)), Node::TransformSpace::TS_LOCAL);
+    batNode->pitch(Radian(Real(-1)), Node::TransformSpace::TS_LOCAL);
 
     // create ground
     ent = mSceneMgr->createEntity("floor", "FloorPlane");
@@ -128,17 +142,6 @@ void BattingSimulator::createScene(void)
             bWorld->addRigidBody(blockBody);
             rigidBodies.push_back(blockBody);
         }
-
-    ent = mSceneMgr->createEntity("Círculo.005.mesh");
-    ent->setMaterialName("Ogre/Earring");
-    ent->setCastShadows(false);
-
-    batNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
-    batNode->setPosition(-150,430,100);
-    batNode->setScale(7,7,7);
-    batNode->attachObject(ent);
-    batNode->roll (Radian(Real(2)), Node::TransformSpace::TS_LOCAL);
-    batNode->pitch(Radian(Real(-1)), Node::TransformSpace::TS_LOCAL);
 }
 //---------------------------------------------------------------------------
 

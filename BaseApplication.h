@@ -135,12 +135,14 @@ protected:
     Ogre::String                mPluginsCfg;
 
     Ogre::SceneNode* testNode;
+    Ogre::SceneNode* camNode;
     Ogre::SceneNode* batNode;
 
     float charge;
     float swing;
     bool  batCharge;
     bool  batSwing;
+    Ogre::Vector3 cameraVelocity;
 
     Ogre::OverlaySystem*        mOverlaySystem;
 
