@@ -40,7 +40,8 @@ BaseApplication::BaseApplication(void)
     mOverlaySystem(0),
     charge(0),
     batCharge(false),
-    batSwing(false)
+    batSwing(false),
+    cameraVelocity(Ogre::Vector3::ZERO)
 {
 #if OGRE_PLATFORM == OGRE_PLATFORM_APPLE
     m_ResourcePath = Ogre::macBundlePath() + "/Contents/Resources/";
@@ -340,7 +341,12 @@ bool BaseApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
                                orient.getY(),
                                orient.getZ());
         }
-
+    Ogre::Vector3 currentCameraPos = mCamera->getPosition();
+    currentCameraPos += cameraVelocity * evt.timeSinceLastFrame;
+    mCamera->setPosition(currentCameraPos);
+    Ogre::Vector3 currentBatPos = batNode->getPosition();
+    currentBatPos += cameraVelocity * evt.timeSinceLastFrame;
+    batNode->setPosition(currentBatPos);
 
     mTrayMgr->frameRenderingQueued(evt);
 
@@ -358,6 +364,7 @@ bool BaseApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
             mDetailsPanel->setParamValue(7, Ogre::StringConverter::toString(mCamera->getDerivedOrientation().z));
         }
     }
+        
 
     return true;
 }
@@ -451,21 +458,36 @@ bool BaseApplication::keyPressed( const OIS::KeyEvent &arg )
     {
         mShutDown = true;
     }
-
+    else if (arg.key == OIS::KC_W)
+        cameraVelocity.y = 100;
+    else if (arg.key == OIS::KC_S)
+        cameraVelocity.y = -100;
+    else if (arg.key == OIS::KC_A)
+        cameraVelocity.x = -100;
+    else if (arg.key == OIS::KC_D)
+        cameraVelocity.x = 100;
     //mCameraMan->injectKeyDown(arg);
     return true;
 }
 //---------------------------------------------------------------------------
 bool BaseApplication::keyReleased(const OIS::KeyEvent &arg)
 {
+    if (arg.key == OIS::KC_W)
+        cameraVelocity.y = 0;
+    else if (arg.key == OIS::KC_S)
+        cameraVelocity.y = 0;
+    else if (arg.key == OIS::KC_A)
+        cameraVelocity.x = 0;
+    else if (arg.key == OIS::KC_D)
+        cameraVelocity.x = 0;
     mCameraMan->injectKeyUp(arg);
     return true;
 }
 //---------------------------------------------------------------------------
 bool BaseApplication::mouseMoved(const OIS::MouseEvent &arg)
 {
-    // batNode->translate(arg.state.X.rel*0.25f, -arg.state.Y.rel*0.25f, 0);
-    // mCamera->lookAt(testNode->getPosition());
+    batNode->translate(arg.state.X.rel*0.25f, -arg.state.Y.rel*0.25f, 0);
+    mCamera->lookAt(testNode->getPosition());
 
     // if (mTrayMgr->injectMouseMove(arg)) return true;
     // mCameraMan->injectMouseMove(arg);

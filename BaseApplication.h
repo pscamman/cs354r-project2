@@ -140,6 +140,7 @@ protected:
     int  charge;
     bool batCharge;
     bool batSwing;
+    Ogre::Vector3 cameraVelocity;
 
     Ogre::OverlaySystem*        mOverlaySystem;
 
