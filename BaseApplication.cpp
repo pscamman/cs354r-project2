@@ -30,7 +30,7 @@ BaseApplication::BaseApplication(void)
     mResourcesCfg(Ogre::StringUtil::BLANK),
     mPluginsCfg(Ogre::StringUtil::BLANK),
     mTrayMgr(0),
-    mCameraMan(0),
+    //mCameraMan(0),
     mDetailsPanel(0),
     mCursorWasVisible(false),
     mShutDown(false),
@@ -41,7 +41,8 @@ BaseApplication::BaseApplication(void)
     charge(0),
     batCharge(false),
     batSwing(false),
-    cameraVelocity(Ogre::Vector3::ZERO)
+    cameraVelocity(Ogre::Vector3::ZERO),
+    yawPerSec(0)
 {
 #if OGRE_PLATFORM == OGRE_PLATFORM_APPLE
     m_ResourcePath = Ogre::macBundlePath() + "/Contents/Resources/";
@@ -54,7 +55,7 @@ BaseApplication::BaseApplication(void)
 BaseApplication::~BaseApplication(void)
 {
     if (mTrayMgr) delete mTrayMgr;
-    if (mCameraMan) delete mCameraMan;
+    //if (mCameraMan) delete mCameraMan;
     if (mOverlaySystem) delete mOverlaySystem;
     if (collisionConfiguration) delete collisionConfiguration;
     if (dispatcher) delete dispatcher;
@@ -103,13 +104,9 @@ void BaseApplication::createCamera(void)
     // Create the camera
     mCamera = mSceneMgr->createCamera("PlayerCam");
 
-    // Position it at 500 in Z direction
-    mCamera->setPosition(Ogre::Vector3(0,0,80));
-    // Look back along -Z
-    mCamera->lookAt(Ogre::Vector3(0,0,-300));
     mCamera->setNearClipDistance(5);
 
-    mCameraMan = new OgreBites::SdkCameraMan(mCamera);   // Create a default camera controller
+    //mCameraMan = new OgreBites::SdkCameraMan(mCamera);   // Create a default camera controller
 }
 //---------------------------------------------------------------------------
 void BaseApplication::createFrameListener(void)
@@ -341,11 +338,10 @@ bool BaseApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
                            orient.getY(),
                            orient.getZ());
     }
+    testNode->yaw(Ogre::Radian(yawPerSec * evt.timeSinceLastFrame));
     Ogre::Vector3 currentBallPos = testNode->getPosition();
     currentBallPos += cameraVelocity * evt.timeSinceLastFrame;
     testNode->setPosition(currentBallPos);
-    mCamera->setPosition(camNode->getPosition()+testNode->getPosition());
-    mCamera->lookAt(currentBallPos);
 
     float scale = (4+charge)*7;
     batNode->setScale(scale,scale,scale);
@@ -354,7 +350,7 @@ bool BaseApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
 
     if (!mTrayMgr->isDialogVisible())
     {
-        mCameraMan->frameRenderingQueued(evt);   // If dialog isn't up, then update the camera
+        //mCameraMan->frameRenderingQueued(evt);   // If dialog isn't up, then update the camera
         if (mDetailsPanel->isVisible())          // If details panel is visible, then update its contents
         {
             mDetailsPanel->setParamValue(0, Ogre::StringConverter::toString(mCamera->getDerivedPosition().x));
@@ -461,13 +457,17 @@ bool BaseApplication::keyPressed( const OIS::KeyEvent &arg )
         mShutDown = true;
     }
     else if (arg.key == OIS::KC_W)
-        cameraVelocity.y = 100;
+        cameraVelocity.y = 200;
     else if (arg.key == OIS::KC_S)
-        cameraVelocity.y = -100;
+        cameraVelocity.y = -200;
     else if (arg.key == OIS::KC_A)
-        cameraVelocity.x = -100;
+        cameraVelocity.x = -200;
     else if (arg.key == OIS::KC_D)
-        cameraVelocity.x = 100;
+        cameraVelocity.x = 200;
+    else if (arg.key == OIS::KC_Q)
+        yawPerSec = -M_PI/4;
+    else if (arg.key == OIS::KC_E)
+        yawPerSec =  M_PI/4;
     //mCameraMan->injectKeyDown(arg);
     return true;
 }
@@ -482,7 +482,11 @@ bool BaseApplication::keyReleased(const OIS::KeyEvent &arg)
         cameraVelocity.x = 0;
     else if (arg.key == OIS::KC_D)
         cameraVelocity.x = 0;
-    mCameraMan->injectKeyUp(arg);
+    else if (arg.key == OIS::KC_Q)
+        yawPerSec = 0;
+    else if (arg.key == OIS::KC_E)
+        yawPerSec = 0;
+    //mCameraMan->injectKeyUp(arg);
     return true;
 }
 //---------------------------------------------------------------------------
@@ -513,7 +517,7 @@ bool BaseApplication::mousePressed(const OIS::MouseEvent &arg, OIS::MouseButtonI
 bool BaseApplication::mouseReleased(const OIS::MouseEvent &arg, OIS::MouseButtonID id)
 {
     if (mTrayMgr->injectMouseUp(arg, id)) return true;
-    mCameraMan->injectMouseUp(arg, id);
+    //mCameraMan->injectMouseUp(arg, id);
 
     if(batCharge)
     {
@@ -573,11 +577,12 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
                 ballEnt->setVisible(false);
                 Ogre::Entity*    ent;
                 Ogre::SceneNode* sphereNode;
-                Ogre::Vector3    pos = bApp->testNode->getPosition();
-                Ogre::Vector3    cam = bApp->mCamera ->getPosition();
-                float            hyp = sqrt(pos.x*pos.x + (pos.y-cam.y)*(pos.y-cam.y) + cam.z*cam.z);
+                Ogre::Vector3    direction = bApp->mCamera->getDerivedDirection();
+                direction.y = 0;
+                direction.normalise();
                 static int i = -1;
-                ent = bApp->mSceneMgr->createEntity("sphere" + std::to_string(++i), Ogre::SceneManager::PT_SPHERE);
+                Ogre::Vector3 pos = bApp->testNode->getPosition();
+                ent = bApp->mSceneMgr->createEntity("sphere"+std::to_string(++i), Ogre::SceneManager::PT_SPHERE);
                 ent->setMaterialName("Core/StatsBlockBorder/Up");
                 ent->setCastShadows(true);
                 sphereNode = bApp->mSceneMgr->getRootSceneNode()->createChildSceneNode();
@@ -595,8 +600,7 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
                 btRigidBody::btRigidBodyConstructionInfo ballRBCI(bmass, ballMotionState,ballShape,fallInertia);
                 btRigidBody* ballBody = new btRigidBody(ballRBCI);
                 float v = std::min(1600.0f, 300.0f*(bApp->charge)+100.0f);
-                //ballBody->setLinearVelocity(btVector3(pos.x*v/hyp,(pos.y-cam.y)*v/hyp,-cam.z*v/hyp));
-                ballBody->setLinearVelocity(btVector3(0,0,-v));
+                ballBody->setLinearVelocity(btVector3(direction.x*v, 0, direction.z*v));
                 ballBody->setUserPointer(sphereNode);
                 ballBody->setRestitution(0.8f);
                 bApp->bWorld->addRigidBody(ballBody);

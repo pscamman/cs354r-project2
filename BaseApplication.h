@@ -143,13 +143,14 @@ protected:
     bool  batCharge;
     bool  batSwing;
     Ogre::Vector3 cameraVelocity;
+    Ogre::Real    yawPerSec;
 
     Ogre::OverlaySystem*        mOverlaySystem;
 
     // OgreBites
     OgreBites::InputContext     mInputContext;
     OgreBites::SdkTrayManager*	mTrayMgr;
-    OgreBites::SdkCameraMan*    mCameraMan;     	// Basic camera controller
+    //OgreBites::SdkCameraMan*    mCameraMan;     	// Basic camera controller
     OgreBites::ParamsPanel*     mDetailsPanel;   	// Sample details panel
     bool                        mCursorWasVisible;	// Was cursor visible before dialog appeared?
     bool                        mShutDown;

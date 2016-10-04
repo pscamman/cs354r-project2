@@ -77,7 +77,10 @@ void BattingSimulator::createScene(void)
 
     // create non-physical camera node as a child of ball
     camNode = testNode->createChildSceneNode();
-    camNode->setPosition(0, 300, 1000);
+    camNode->attachObject(mCamera);
+    mCamera->lookAt(testNode->getPosition());
+    camNode->setPosition(0, 200, 1000);
+    mCamera->setPosition(0, 200, 1000);
 
     // create non-physical bat as a child of ball
     ent = mSceneMgr->createEntity("Círculo.005.mesh");
