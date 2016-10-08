@@ -257,9 +257,13 @@ bool BaseApplication::setupSound(void)
     {
         exit(-1);
     }
-    for(const std::string& sound : sounds)
-        if(addSound(sound)) return false;
+    //for(const std::string& sound : sounds)
+    //    if(addSound(sound)) return false;
+    Uint8* wav_buffer;
+    Uint32 wav_length;
+    if(SDL_LoadWAV(sound.c_str(), &wav_spec, &wav_buffer, &wav_length) == NULL) return false;
     assert(false);
+    return true;
 }
 //---------------------------------------------------------------------------
 void BaseApplication::closeSound(void)
