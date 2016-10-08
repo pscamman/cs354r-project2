@@ -249,20 +249,9 @@ bool BaseApplication::setupSound(void)
     // the specs, length and buffer of our wav are filled
     // SOUND_PATH in BaseApplication.h defines
     // set the callback function
-    wav_spec.callback = audioCallback;
-    wav_spec.userdata = NULL;
+    for(const std::string& sound : sounds)
+        if(not addSound(sound)) return false;
 
-    /* Open the audio device */
-    if(SDL_OpenAudio(&wav_spec, NULL) < 0)
-    {
-        exit(-1);
-    }
-    //for(const std::string& sound : sounds)
-    //    if(addSound(sound)) return false;
-    Uint8* wav_buffer;
-    Uint32 wav_length;
-    if(SDL_LoadWAV(sound.c_str(), &wav_spec, &wav_buffer, &wav_length) == NULL) return false;
-    assert(false);
     return true;
 }
 //---------------------------------------------------------------------------
@@ -293,14 +282,29 @@ bool BaseApplication::addSound(const std::string& sound)
 {
     wav_buffers.resize(wav_buffers.size()+1);
     wav_lengths.resize(wav_lengths.size()+1);
-    return SDL_LoadWAV(sound.c_str(), &wav_spec, &wav_buffers.back(), &wav_lengths.back()) == NULL;
+    wav_specs  .resize(wav_specs  .size()+1);
+    if(SDL_LoadWAV(sound.c_str(), &wav_specs.back(), &wav_buffers.back(), &wav_lengths.back()) == NULL)
+        return false;
+    wav_specs.back().callback = audioCallback;
+    wav_specs.back().userdata = NULL;
+    return true;
 }
 //---------------------------------------------------------------------------
 void BaseApplication::playSound(int index)
 {
-    audio_pos = wav_buffers[index];
-    audio_len = wav_lengths[index];
-    SDL_PauseAudio(0);
+    /* Open the audio device after closing its old spec */
+    static bool first = true;
+    if(first)
+        first = false;
+    else
+        SDL_CloseAudio();
+
+    if(SDL_OpenAudio(&wav_specs[index], NULL) == 0)
+    {
+        audio_pos = wav_buffers[index];
+        audio_len = wav_lengths[index];
+        SDL_PauseAudio(0);
+    }
 }
 //---------------------------------------------------------------------------
 void BaseApplication::go(void)

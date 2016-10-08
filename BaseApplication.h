@@ -174,12 +174,12 @@ protected:
     // btRigidBody* batRigidBody;
 
     std::vector<std::string> sounds = {"Bell.wav",
-                                       "gun-gunshot-01.wav"};
-    Uint8*              audio_pos;   // pointer to the audio buffer to be played
-    Uint32              audio_len;   // remaining length of the sample we have to play
-    SDL_AudioSpec       wav_spec;    // the specs of our piece of music
-    std::vector<Uint8*> wav_buffers; // buffer containing our audio file
-    std::vector<Uint32> wav_lengths; // length of our sample
+                                       "hammer.wav"};
+    Uint8*                      audio_pos;   // pointer to the audio buffer to be played
+    Uint32                      audio_len;   // remaining length of the sample we have to play
+    std::vector<SDL_AudioSpec>  wav_specs;   // the specs of our audios
+    std::vector<Uint8*>         wav_buffers; // buffers containing our audio files
+    std::vector<Uint32>         wav_lengths; // lengths of our samples
 
 #ifdef OGRE_STATIC_LIB
     Ogre::StaticPluginLoader m_StaticPluginLoader;
