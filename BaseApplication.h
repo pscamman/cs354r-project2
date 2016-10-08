@@ -174,7 +174,7 @@ protected:
     // btRigidBody* batRigidBody;
 
     std::vector<std::string> sounds = {"Bell.wav",
-                                       "hammer.wav"};
+                                       "crane_bump.wav"};
     Uint8*                      audio_pos;   // pointer to the audio buffer to be played
     Uint32                      audio_len;   // remaining length of the sample we have to play
     std::vector<SDL_AudioSpec>  wav_specs;   // the specs of our audios

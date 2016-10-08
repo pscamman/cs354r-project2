@@ -158,6 +158,7 @@ extern "C" {
     int main(int argc, char *argv[])
 #endif
     {
+        std::cout << SDL_GetNumAudioDevices(0) << std::endl;
         // Random seed
         srand(time(NULL));
 
