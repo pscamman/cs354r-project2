@@ -18,10 +18,6 @@ http://www.ogre3d.org/wiki/
 #ifndef __BaseApplication_h_
 #define __BaseApplication_h_
 
-#ifndef SOUND_PATH
-#define SOUND_PATH "Bell.wav"
-#endif
-
 #ifndef BT_TIMESTEP
 #define BT_TIMESTEP 1.0f/100.0f
 #endif
@@ -111,6 +107,10 @@ protected:
     virtual void destroyScene(void);
     virtual void createViewports(void);
     virtual void setupResources(void);
+    virtual bool setupSound(void);
+    virtual void closeSound(void);
+    virtual bool addSound(const std::string& sound);
+    virtual void playSound(int index);
     virtual void createResourceListener(void);
     virtual void loadResources(void);
     virtual void createBulletSim(void);
@@ -172,27 +172,32 @@ protected:
     btAlignedObjectArray<btRigidBody*> environment;
     // btRigidBody* batRigidBody;
 
+    std::vector<std::string> sounds = {"Bell.wav",
+                                       "gun-gunshot-01.wav"};
+    Uint8*              audio_pos;   // pointer to the audio buffer to be played
+    Uint32              audio_len;   // remaining length of the sample we have to play
+    SDL_AudioSpec       wav_spec;    // the specs of our piece of music
+    std::vector<Uint8*> wav_buffers; // buffer containing our audio file
+    std::vector<Uint32> wav_lengths; // length of our sample
+
 #ifdef OGRE_STATIC_LIB
     Ogre::StaticPluginLoader m_StaticPluginLoader;
 #endif
 
 public:
     friend void bulletCallback(btDynamicsWorld *world, btScalar timeStep);
+    friend void  audioCallback(void *userdata, Uint8 *stream, int len);
 };
+
+//---------------------------------------------------------------------------
 
 void bulletCallback(btDynamicsWorld *world, btScalar timeStep);
 
+void audioCallback(void *userdata, Uint8 *stream, int len);
+
+//---------------------------------------------------------------------------
+
 extern BaseApplication* bApp;
-
-extern Uint8*        audio_pos; // global pointer to the audio buffer to be played
-extern Uint32        audio_len; // remaining length of the sample we have to play
-extern Uint8*        wav_buffer; // buffer containing our audio file
-extern Uint32        wav_length; // length of our sample
-extern SDL_AudioSpec wav_spec; // the specs of our piece of music
-
-void my_audio_callback(void *userdata, Uint8 *stream, int len);
-
-void playSound();
 
 //---------------------------------------------------------------------------
 

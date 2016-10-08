@@ -20,11 +20,6 @@ http://www.ogre3d.org/wiki/
 // globals, extern variables from BaseApplication.h
 BaseApplication* bApp;
 
-Uint8*        audio_pos;  // global pointer to the audio buffer to be played
-Uint32        audio_len;  // remaining length of the sample we have to play
-Uint8*        wav_buffer; // buffer containing our audio file
-Uint32        wav_length; // length of our sample
-SDL_AudioSpec wav_spec;   // the specs of our piece of music
 //---------------------------------------------------------------------------
 BattingSimulator::BattingSimulator(void)
 {
@@ -59,7 +54,7 @@ void BattingSimulator::createScene(void)
     p.d = 0;
     MeshManager::getSingleton().createPlane("FloorPlane",
         ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
-        p,10000,10000,1,1,true,1,5,5,Vector3::UNIT_Z);
+        p,100000,100000,1,1,true,1,5,5,Vector3::UNIT_Z);
 
     // Create the entities, scene nodes, and bullet objects
     Entity*    ent;
@@ -166,25 +161,6 @@ extern "C" {
         // Random seed
         srand(time(NULL));
 
-        // SDL sound setup
-        // the specs, length and buffer of our wav are filled
-        // SOUND_PATH in BaseApplication.h defines
-        if(SDL_LoadWAV(SOUND_PATH, &wav_spec, &wav_buffer, &wav_length) == NULL )
-        {
-            return 1;
-        }
-        // set the callback function
-        wav_spec.callback = my_audio_callback;
-        wav_spec.userdata = NULL;
-        // set our global static variables
-        audio_pos = wav_buffer; // copy sound buffer
-        audio_len = wav_length; // copy file length
-
-        /* Open the audio device */
-        if(SDL_OpenAudio(&wav_spec, NULL) < 0)
-        {
-            exit(-1);
-        }
 
         // Create application object
         BattingSimulator app;
@@ -200,16 +176,6 @@ extern "C" {
                 e.getFullDescription().c_str() << std::endl;
 #endif
         }
-
-        // wait until we're done playing
-        while(audio_len > 0)
-        {
-            SDL_Delay(100);
-        }
-
-        // shut everything down
-        SDL_CloseAudio();
-        SDL_FreeWAV(wav_buffer);
 
         return 0;
     }

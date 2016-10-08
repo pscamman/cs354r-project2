@@ -238,10 +238,42 @@ void BaseApplication::createBulletSim(void) {
          solver = new btSequentialImpulseConstraintSolver;
 
          bWorld = new btDiscreteDynamicsWorld(dispatcher,overlappingPairCache,solver,collisionConfiguration);
-         bWorld->setGravity(btVector3(0,-10,0));
+         bWorld->setGravity(btVector3(0,-100,0));
 
          bWorld->setInternalTickCallback(bulletCallback);
     }
+//---------------------------------------------------------------------------
+bool BaseApplication::setupSound(void)
+{
+    // SDL sound setup
+    // the specs, length and buffer of our wav are filled
+    // SOUND_PATH in BaseApplication.h defines
+    // set the callback function
+    wav_spec.callback = audioCallback;
+    wav_spec.userdata = NULL;
+
+    /* Open the audio device */
+    if(SDL_OpenAudio(&wav_spec, NULL) < 0)
+    {
+        exit(-1);
+    }
+    for(const std::string& sound : sounds)
+        if(addSound(sound)) return false;
+}
+//---------------------------------------------------------------------------
+void BaseApplication::closeSound(void)
+{
+        // wait until we're done playing
+        while(audio_len > 0)
+        {
+            SDL_Delay(100);
+        }
+
+        // shut everything down
+        SDL_CloseAudio();
+        for(auto wav_buffer : wav_buffers)
+            SDL_FreeWAV(wav_buffer);
+}
 //---------------------------------------------------------------------------
 void BaseApplication::createResourceListener(void)
 {
@@ -250,6 +282,20 @@ void BaseApplication::createResourceListener(void)
 void BaseApplication::loadResources(void)
 {
     Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
+}
+//---------------------------------------------------------------------------
+bool BaseApplication::addSound(const std::string& sound)
+{
+    wav_buffers.resize(wav_buffers.size()+1);
+    wav_lengths.resize(wav_lengths.size()+1);
+    return SDL_LoadWAV(sound.c_str(), &wav_spec, &wav_buffers.back(), &wav_lengths.back()) == NULL;
+}
+//---------------------------------------------------------------------------
+void BaseApplication::playSound(int index)
+{
+    audio_pos = wav_buffers[index];
+    audio_len = wav_lengths[index];
+    SDL_PauseAudio(0);
 }
 //---------------------------------------------------------------------------
 void BaseApplication::go(void)
@@ -275,17 +321,23 @@ void BaseApplication::go(void)
     if (!setup())
         return;
     mRoot->startRendering();
-        // Clean up
+    // Clean up
+    closeSound();
     destroyScene();
 }
 //---------------------------------------------------------------------------
 bool BaseApplication::setup(void)
 {
+    bool carryOn;
+
+    carryOn = setupSound();
+    if (!carryOn) return false;
+
     mRoot = new Ogre::Root(mPluginsCfg);
 
     setupResources();
 
-    bool carryOn = configure();
+    carryOn = configure();
     if (!carryOn) return false;
 
     chooseSceneManager();
@@ -502,11 +554,11 @@ bool BaseApplication::mouseMoved(const OIS::MouseEvent &arg)
 //---------------------------------------------------------------------------
 bool BaseApplication::mousePressed(const OIS::MouseEvent &arg, OIS::MouseButtonID id)
 {
-
-    if(!batSwing)
+    if(id == OIS::MB_Left)
     {
-        playSound();
         batCharge = true;
+        if(not batSwing)
+            playSound(0);
     }
 
     //if (mTrayMgr->injectMouseDown(arg, id)) return true;
@@ -516,13 +568,17 @@ bool BaseApplication::mousePressed(const OIS::MouseEvent &arg, OIS::MouseButtonI
 //---------------------------------------------------------------------------
 bool BaseApplication::mouseReleased(const OIS::MouseEvent &arg, OIS::MouseButtonID id)
 {
-    if (mTrayMgr->injectMouseUp(arg, id)) return true;
+    if(mTrayMgr->injectMouseUp(arg, id)) return true;
     //mCameraMan->injectMouseUp(arg, id);
 
-    if(batCharge)
+    if(batCharge and id == OIS::MB_Left)
     {
         batCharge = false;
-        batSwing  = true;
+        if(not batSwing)
+        {
+            batSwing  = true;
+            playSound(1);
+        }
     }
 }
 //---------------------------------------------------------------------------
@@ -609,6 +665,8 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
         }
         else
         {
+            if(bApp->batCharge)
+                bApp->playSound(1);
             bApp->charge = 0.0f;
             bApp->swing  = 0.0f;
             bApp->batSwing = false;
@@ -622,25 +680,18 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
 // here you have to copy the data of your audio buffer into the
 // requesting audio buffer (stream)
 // you should only copy as much as the requested length (len)
-void my_audio_callback(void *userdata, Uint8 *stream, int len)
+void audioCallback(void *userdata, Uint8 *stream, int len)
 {
 
-    if (audio_len ==0)
+    if (bApp->audio_len == 0)
         return;
 
-    len = ( len > audio_len ? audio_len : len );
-    //SDL_memcpy (stream, audio_pos, len);                  // simply copy from one buffer into the other
-    SDL_MixAudio(stream, audio_pos, len, SDL_MIX_MAXVOLUME);// mix from one buffer into another
+    len = ( len > bApp->audio_len ? bApp->audio_len : len );
+    //SDL_memcpy(stream, bApp->audio_pos, len);                  // simply copy from one buffer into the other
+    SDL_MixAudio(stream, bApp->audio_pos, len, SDL_MIX_MAXVOLUME);// mix from one buffer into another
 
-    audio_pos += len;
-    audio_len -= len;
-}
-
-void playSound()
-{
-    audio_pos = wav_buffer;
-    audio_len = wav_length;
-    SDL_PauseAudio(0);
+    bApp->audio_pos += len;
+    bApp->audio_len -= len;
 }
 
 //---------------------------------------------------------------------------
