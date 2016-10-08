@@ -259,6 +259,7 @@ bool BaseApplication::setupSound(void)
     }
     for(const std::string& sound : sounds)
         if(addSound(sound)) return false;
+    assert(false);
 }
 //---------------------------------------------------------------------------
 void BaseApplication::closeSound(void)

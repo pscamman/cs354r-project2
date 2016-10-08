@@ -43,6 +43,7 @@ http://www.ogre3d.org/wiki/
 #include <stdlib.h>      /* srand, rand     */
 #include <time.h>        /* time            */
 #include <vector>        /* vector          */
+#include <cassert>
 
 // SDL
 #include "SDL/SDL.h"
