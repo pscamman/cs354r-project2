@@ -462,7 +462,7 @@ bool BaseApplication::keyPressed( const OIS::KeyEvent &arg )
         Ogre::MaterialManager::getSingleton().setDefaultAnisotropy(aniso);
         mDetailsPanel->setParamValue(9, newVal);
     }
-    else if (arg.key == OIS::KC_R)   // cycle polygon rendering mode
+    else if (arg.key == OIS::KC_P)   // cycle polygon rendering mode
     {
         Ogre::String newVal;
         Ogre::PolygonMode pm;
@@ -509,6 +509,36 @@ bool BaseApplication::keyPressed( const OIS::KeyEvent &arg )
         yawPerSec = -M_PI/4;
     else if (arg.key == OIS::KC_E)
         yawPerSec =  M_PI/4;
+     else if (arg.key == OIS::KC_R)
+    {
+        static int i = -1;
+        Ogre::Entity*    ent;
+        Ogre::SceneNode* sphereNode;
+        Ogre::Vector3 pos = bApp->testNode->getPosition();
+        pos.y += 300;
+        pos.z -= 10;
+        ent = mSceneMgr->createEntity("Sphere"+std::to_string(++i), Ogre::SceneManager::PT_SPHERE);
+        ent->setMaterialName("Examples/BumpyMetal");
+        ent->setCastShadows(true);
+        sphereNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
+        sphereNode->setPosition(pos);
+        sphereNode->setScale(.25, .25, .25);
+        sphereNode->attachObject(ent);
+        btCollisionShape* ballShape =  new btSphereShape(15);
+        btDefaultMotionState* ballMotionState =
+            new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1),
+                                     btVector3(pos.x, pos.y, pos.z)));
+        btScalar bmass (1.0);
+        btVector3 fallInertia(0, 0, 0);
+        ballShape->calculateLocalInertia(bmass, fallInertia);
+        btRigidBody::btRigidBodyConstructionInfo ballRBCI(bmass, ballMotionState,ballShape,fallInertia);
+        btRigidBody* ballBody = new btRigidBody(ballRBCI);
+        float v = std::min(1600.0f, 300.0f*charge+100.0f);
+        ballBody->setUserPointer(sphereNode);
+        ballBody->setRestitution(0.8f);
+        bApp->bWorld->addRigidBody(ballBody);
+        bApp->rigidBodies.push_back(ballBody);
+    }
     //mCameraMan->injectKeyDown(arg);
     return true;
 }
