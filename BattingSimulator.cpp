@@ -122,7 +122,7 @@ void BattingSimulator::createScene(void)
             ent = mSceneMgr->createEntity(Ogre::SceneManager::PT_CUBE);
             ent->setMaterialName(matString);
             ent->setCastShadows(true);
-            node = mSceneMgr->getRootSceneNode()->createChildSceneNode();
+            node = mSceneMgr->getRootSceneNode()->createChildSceneNode("block"+std::to_string(i)+" "+std::to_string(j));
             node->setPosition(i*100, j*100, -500);
             node->attachObject(ent);
 
@@ -158,7 +158,6 @@ extern "C" {
     int main(int argc, char *argv[])
 #endif
     {
-        std::cout << SDL_GetNumAudioDevices(0) << std::endl;
         // Random seed
         srand(time(NULL));
 

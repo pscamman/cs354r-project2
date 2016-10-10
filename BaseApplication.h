@@ -47,6 +47,7 @@ http://www.ogre3d.org/wiki/
 
 // SDL
 #include "SDL/SDL.h"
+#include "SDL/SDL_mixer.h"
 // ---------------------------------------
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_APPLE
@@ -175,11 +176,7 @@ protected:
 
     std::vector<std::string> sounds = {"Bell.wav",
                                        "crane_bump.wav"};
-    Uint8*                      audio_pos;   // pointer to the audio buffer to be played
-    Uint32                      audio_len;   // remaining length of the sample we have to play
-    std::vector<SDL_AudioSpec>  wav_specs;   // the specs of our audios
-    std::vector<Uint8*>         wav_buffers; // buffers containing our audio files
-    std::vector<Uint32>         wav_lengths; // lengths of our samples
+    std::vector<Mix_Chunk*>     mix_chunks;  // the chunks of audio
 
 #ifdef OGRE_STATIC_LIB
     Ogre::StaticPluginLoader m_StaticPluginLoader;
@@ -187,14 +184,11 @@ protected:
 
 public:
     friend void bulletCallback(btDynamicsWorld *world, btScalar timeStep);
-    friend void  audioCallback(void *userdata, Uint8 *stream, int len);
 };
 
 //---------------------------------------------------------------------------
 
 void bulletCallback(btDynamicsWorld *world, btScalar timeStep);
-
-void audioCallback(void *userdata, Uint8 *stream, int len);
 
 //---------------------------------------------------------------------------
 

@@ -249,24 +249,34 @@ bool BaseApplication::setupSound(void)
     // the specs, length and buffer of our wav are filled
     // SOUND_PATH in BaseApplication.h defines
     // set the callback function
+    if(SDL_Init(SDL_INIT_AUDIO) < 0)
+        return false;
+    if(Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0)
+        return false;
     for(const std::string& sound : sounds)
         if(not addSound(sound)) return false;
 
     return true;
 }
 //---------------------------------------------------------------------------
+bool BaseApplication::addSound(const std::string& sound)
+{
+    mix_chunks.resize(mix_chunks.size()+1);
+    return (mix_chunks.back() = Mix_LoadWAV(sound.c_str()));
+}
+//---------------------------------------------------------------------------
 void BaseApplication::closeSound(void)
 {
-        // wait until we're done playing
-        while(audio_len > 0)
-        {
-            SDL_Delay(100);
-        }
-
-        // shut everything down
-        SDL_CloseAudio();
-        for(auto wav_buffer : wav_buffers)
-            SDL_FreeWAV(wav_buffer);
+    // shut everything down
+    for(Mix_Chunk* chunk : mix_chunks)
+        Mix_FreeChunk(chunk);
+    mix_chunks.resize(0);
+    Mix_Quit();
+}
+//---------------------------------------------------------------------------
+void BaseApplication::playSound(int index)
+{
+    Mix_PlayChannel(-1, mix_chunks[index], 0);
 }
 //---------------------------------------------------------------------------
 void BaseApplication::createResourceListener(void)
@@ -276,35 +286,6 @@ void BaseApplication::createResourceListener(void)
 void BaseApplication::loadResources(void)
 {
     Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
-}
-//---------------------------------------------------------------------------
-bool BaseApplication::addSound(const std::string& sound)
-{
-    wav_buffers.resize(wav_buffers.size()+1);
-    wav_lengths.resize(wav_lengths.size()+1);
-    wav_specs  .resize(wav_specs  .size()+1);
-    if(SDL_LoadWAV(sound.c_str(), &wav_specs.back(), &wav_buffers.back(), &wav_lengths.back()) == NULL)
-        return false;
-    wav_specs.back().callback = audioCallback;
-    wav_specs.back().userdata = NULL;
-    return true;
-}
-//---------------------------------------------------------------------------
-void BaseApplication::playSound(int index)
-{
-    /* Open the audio device after closing its old spec */
-    static bool first = true;
-    if(first)
-        first = false;
-    else
-        SDL_CloseAudio();
-
-    if(SDL_OpenAudio(&wav_specs[index], NULL) == 0)
-    {
-        audio_pos = wav_buffers[index];
-        audio_len = wav_lengths[index];
-        SDL_PauseAudio(0);
-    }
 }
 //---------------------------------------------------------------------------
 void BaseApplication::go(void)
@@ -586,7 +567,7 @@ bool BaseApplication::mouseReleased(const OIS::MouseEvent &arg, OIS::MouseButton
         if(not batSwing)
         {
             batSwing  = true;
-            playSound(1);
+            //playSound(1);
         }
     }
 }
@@ -650,7 +631,7 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
                 ent = bApp->mSceneMgr->createEntity("sphere"+std::to_string(++i), Ogre::SceneManager::PT_SPHERE);
                 ent->setMaterialName("Core/StatsBlockBorder/Up");
                 ent->setCastShadows(true);
-                sphereNode = bApp->mSceneMgr->getRootSceneNode()->createChildSceneNode();
+                sphereNode = bApp->mSceneMgr->getRootSceneNode()->createChildSceneNode("sphere"+std::to_string(i));
                 sphereNode->setPosition(pos);
                 sphereNode->setScale(.25, .25, .25);
                 sphereNode->attachObject(ent);
@@ -675,32 +656,41 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
         else
         {
             if(bApp->batCharge)
-                bApp->playSound(1);
+                bApp->playSound(0);
             bApp->charge = 0.0f;
             bApp->swing  = 0.0f;
             bApp->batSwing = false;
             ballEnt->setVisible(true);
         }
     }
+    int numManifolds = bApp->bWorld->getDispatcher()->getNumManifolds();
+    for(int i=0;i<numManifolds;++i)
+    {
+        btPersistentManifold* contactManifold =  bApp->bWorld->getDispatcher()->getManifoldByIndexInternal(i);
+        const btCollisionObject* obA = static_cast<const btCollisionObject*>(contactManifold->getBody0());
+        const btCollisionObject* obB = static_cast<const btCollisionObject*>(contactManifold->getBody1());
+
+        bool sphereA;
+        bool sphereB;
+        bool blockA;
+        bool blockB;
+        sphereA = !static_cast<Ogre::SceneNode*>(obA->getUserPointer())->getName().substr(0,6).compare("sphere");
+        sphereB = !static_cast<Ogre::SceneNode*>(obB->getUserPointer())->getName().substr(0,6).compare("sphere");
+        blockA  = !static_cast<Ogre::SceneNode*>(obA->getUserPointer())->getName().substr(0,5).compare("block");
+        blockB  = !static_cast<Ogre::SceneNode*>(obB->getUserPointer())->getName().substr(0,5).compare("block");
+        if(sphereA and blockB or sphereB and blockA)
+        {
+            int numContacts = contactManifold->getNumContacts();
+            for(int j=0;j<numContacts;++j)
+            {
+                btManifoldPoint& pt = contactManifold->getContactPoint(j);
+                if (pt.getDistance()<0.f)
+                {
+                    bApp->playSound(1);
+                    break;
+                }
+            }
+        }
+    }
 }
-
-//---------------------------------------------------------------------------
-// audio callback function
-// here you have to copy the data of your audio buffer into the
-// requesting audio buffer (stream)
-// you should only copy as much as the requested length (len)
-void audioCallback(void *userdata, Uint8 *stream, int len)
-{
-
-    if (bApp->audio_len == 0)
-        return;
-
-    len = ( len > bApp->audio_len ? bApp->audio_len : len );
-    //SDL_memcpy(stream, bApp->audio_pos, len);                  // simply copy from one buffer into the other
-    SDL_MixAudio(stream, bApp->audio_pos, len, SDL_MIX_MAXVOLUME);// mix from one buffer into another
-
-    bApp->audio_pos += len;
-    bApp->audio_len -= len;
-}
-
 //---------------------------------------------------------------------------
