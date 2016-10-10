@@ -92,7 +92,7 @@ void BattingSimulator::createScene(void)
     ent = mSceneMgr->createEntity("floor", "FloorPlane");
     ent->setMaterialName("Examples/Rockwall");
     ent->setCastShadows(false);
-    mSceneMgr->getRootSceneNode()->createChildSceneNode("Ground")->attachObject(ent);
+    mSceneMgr->getRootSceneNode()->createChildSceneNode("ground")->attachObject(ent);
 
     btCollisionShape* groundShape = new btStaticPlaneShape(btVector3(0, 1, 0), 0);
     btTransform groundTransform;
@@ -109,7 +109,7 @@ void BattingSimulator::createScene(void)
                                                                btVector3(0, 0, 0));
     groundRBCI.m_friction = 1.0f;
     btRigidBody* groundBody = new btRigidBody(groundRBCI);
-    groundBody->setUserPointer(mSceneMgr->getSceneNode("Ground"));
+    groundBody->setUserPointer(mSceneMgr->getSceneNode("ground"));
     groundBody->setRestitution(0.8f);
     //add the body to the dynamics world
     bWorld->addRigidBody(groundBody);
@@ -117,12 +117,16 @@ void BattingSimulator::createScene(void)
 
     // create target blocks
     for(int i = -2; i < 3; ++i)
-        for(int j = 0; j < 6; ++j)
+        for(int j = 0; j < 7; ++j)
         {
+            bool pointBlock = j!=0 and (2+i+j)%2;
             ent = mSceneMgr->createEntity(Ogre::SceneManager::PT_CUBE);
-            ent->setMaterialName(matString);
+            ent->setMaterialName(pointBlock ? "Examples/10PointBlock" : "Examples/Water3");
             ent->setCastShadows(true);
-            node = mSceneMgr->getRootSceneNode()->createChildSceneNode("block"+std::to_string(i)+" "+std::to_string(j));
+            node = mSceneMgr->getRootSceneNode()->createChildSceneNode((pointBlock ? "point" : "block")
+                                                                       +std::to_string(i)
+                                                                       +" "
+                                                                       +std::to_string(j));
             node->setPosition(i*100, j*100, -500);
             node->attachObject(ent);
 

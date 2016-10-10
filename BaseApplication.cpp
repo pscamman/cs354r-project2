@@ -675,10 +675,18 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
         bool sphereB;
         bool blockA;
         bool blockB;
+        bool groundA;
+        bool groundB;
+        bool pointA;
+        bool pointB;
         sphereA = !static_cast<Ogre::SceneNode*>(obA->getUserPointer())->getName().substr(0,6).compare("sphere");
         sphereB = !static_cast<Ogre::SceneNode*>(obB->getUserPointer())->getName().substr(0,6).compare("sphere");
         blockA  = !static_cast<Ogre::SceneNode*>(obA->getUserPointer())->getName().substr(0,5).compare("block");
         blockB  = !static_cast<Ogre::SceneNode*>(obB->getUserPointer())->getName().substr(0,5).compare("block");
+        groundA = !static_cast<Ogre::SceneNode*>(obA->getUserPointer())->getName().substr(0,6).compare("ground");
+        groundB = !static_cast<Ogre::SceneNode*>(obB->getUserPointer())->getName().substr(0,6).compare("ground");
+        pointA  = !static_cast<Ogre::SceneNode*>(obA->getUserPointer())->getName().substr(0,5).compare("point");
+        pointB  = !static_cast<Ogre::SceneNode*>(obB->getUserPointer())->getName().substr(0,5).compare("point");
         if(sphereA and blockB or sphereB and blockA)
         {
             int numContacts = contactManifold->getNumContacts();
@@ -688,6 +696,20 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
                 if (pt.getAppliedImpulse()>0.f)
                 {
                     toRemove.insert(static_cast<btRigidBody*>(sphereA ? obA : obB));
+                    bApp->playSound(1);
+                    break;
+                }
+            }
+        }
+        if(groundA and pointB or groundB and pointA)
+        {
+            int numContacts = contactManifold->getNumContacts();
+            for(int j=0;j<numContacts;++j)
+            {
+                btManifoldPoint& pt = contactManifold->getContactPoint(j);
+                if (pt.getAppliedImpulse()>0.f)
+                {
+                    toRemove.insert(static_cast<btRigidBody*>(pointA ? obA : obB));
                     bApp->playSound(1);
                     break;
                 }
