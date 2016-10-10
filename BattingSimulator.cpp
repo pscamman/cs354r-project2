@@ -67,7 +67,7 @@ void BattingSimulator::createScene(void)
     ent->setCastShadows(true);
     testNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
     testNode->setPosition(0, 500, 0);
-    testNode->setScale(.25, .25, .25);
+    testNode->setScale(.50, .50, .50);
     testNode->attachObject(ent);
 
     // create non-physical camera node as a child of ball
@@ -113,7 +113,7 @@ void BattingSimulator::createScene(void)
     groundBody->setRestitution(0.8f);
     //add the body to the dynamics world
     bWorld->addRigidBody(groundBody);
-    environment.push_back(groundBody);
+    environment.insert(groundBody);
 
     // create target blocks
     for(int i = -2; i < 3; ++i)
@@ -138,7 +138,7 @@ void BattingSimulator::createScene(void)
             blockBody->setUserPointer(node);
             blockBody->setRestitution(0.8f);
             bWorld->addRigidBody(blockBody);
-            rigidBodies.push_back(blockBody);
+            rigidBodies.insert(blockBody);
         }
 }
 //---------------------------------------------------------------------------

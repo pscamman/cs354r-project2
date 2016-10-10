@@ -42,6 +42,7 @@ http://www.ogre3d.org/wiki/
 #include <string>        /* to_string       */
 #include <stdlib.h>      /* srand, rand     */
 #include <time.h>        /* time            */
+#include <unordered_set> /* unordered_set   */
 #include <vector>        /* vector          */
 #include <cassert>
 
@@ -170,8 +171,8 @@ protected:
     btBroadphaseInterface*                  overlappingPairCache;
     btSequentialImpulseConstraintSolver*    solver;
     btDiscreteDynamicsWorld*                bWorld;
-    btAlignedObjectArray<btRigidBody*> rigidBodies;
-    btAlignedObjectArray<btRigidBody*> environment;
+    std::unordered_set<btRigidBody*> rigidBodies;
+    std::unordered_set<btRigidBody*> environment;
     // btRigidBody* batRigidBody;
 
     std::vector<std::string> sounds = {"Bell.wav",

@@ -165,15 +165,15 @@ void BaseApplication::createFrameListener(void)
 //---------------------------------------------------------------------------
 void BaseApplication::destroyScene(void)
 {
-    for(int i = 0; i < rigidBodies.size(); i++){
-        btRigidBody* rb = rigidBodies.at(i);
+    for(auto rb : rigidBodies)
+    {
         bWorld->removeRigidBody(rb);
         delete rb->getMotionState();
         delete rb->getCollisionShape();
         delete rb;
     }
-    for(int i = 0; i < environment.size(); i++){
-        btRigidBody* rb = environment.at(i);
+    for(auto rb : environment)
+    {
         bWorld->removeRigidBody(rb);
         delete rb->getMotionState();
         delete rb->getCollisionShape();
@@ -365,9 +365,8 @@ bool BaseApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
 
     bWorld->stepSimulation(BT_TIMESTEP, 10);
     btTransform trans;
-    for(int i = 0; i < rigidBodies.size(); i++)
+    for(auto rb : rigidBodies)
     {
-        btRigidBody* rb = rigidBodies.at(i);
         rb->getMotionState()->getWorldTransform(trans);
         Ogre::SceneNode *sn = static_cast<Ogre::SceneNode *> (rb->getUserPointer());
         auto origin = trans.getOrigin();
@@ -633,7 +632,7 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
                 ent->setCastShadows(true);
                 sphereNode = bApp->mSceneMgr->getRootSceneNode()->createChildSceneNode("sphere"+std::to_string(i));
                 sphereNode->setPosition(pos);
-                sphereNode->setScale(.25, .25, .25);
+                sphereNode->setScale(.50, .50, .50);
                 sphereNode->attachObject(ent);
 
                 btCollisionShape* ballShape =  new btSphereShape(25);
@@ -650,7 +649,7 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
                 ballBody->setUserPointer(sphereNode);
                 ballBody->setRestitution(0.8f);
                 bApp->bWorld->addRigidBody(ballBody);
-                bApp->rigidBodies.push_back(ballBody);
+                bApp->rigidBodies.insert(ballBody);
             }
         }
         else
@@ -663,12 +662,14 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
             ballEnt->setVisible(true);
         }
     }
+
     int numManifolds = bApp->bWorld->getDispatcher()->getNumManifolds();
+    std::unordered_set<btRigidBody*> toRemove;
     for(int i=0;i<numManifolds;++i)
     {
         btPersistentManifold* contactManifold =  bApp->bWorld->getDispatcher()->getManifoldByIndexInternal(i);
-        const btCollisionObject* obA = static_cast<const btCollisionObject*>(contactManifold->getBody0());
-        const btCollisionObject* obB = static_cast<const btCollisionObject*>(contactManifold->getBody1());
+        btCollisionObject* obA = (btCollisionObject*)(contactManifold->getBody0());
+        btCollisionObject* obB = (btCollisionObject*)(contactManifold->getBody1());
 
         bool sphereA;
         bool sphereB;
@@ -684,13 +685,25 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
             for(int j=0;j<numContacts;++j)
             {
                 btManifoldPoint& pt = contactManifold->getContactPoint(j);
-                if (pt.getDistance()<0.f)
+                if (pt.getAppliedImpulse()>0.f)
                 {
+                    toRemove.insert(static_cast<btRigidBody*>(sphereA ? obA : obB));
                     bApp->playSound(1);
                     break;
                 }
             }
         }
+    }
+    for(auto rb : toRemove)
+    {
+        auto sn = static_cast<Ogre::SceneNode*>(rb->getUserPointer());
+        sn->removeAndDestroyAllChildren();
+        bApp->mSceneMgr->destroySceneNode(sn);
+        bApp->rigidBodies.erase(rb);
+        bApp->bWorld->removeRigidBody(rb);
+        delete rb->getMotionState();
+        delete rb->getCollisionShape();
+        delete rb;
     }
 }
 //---------------------------------------------------------------------------
