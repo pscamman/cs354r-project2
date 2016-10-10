@@ -175,7 +175,8 @@ protected:
     // btRigidBody* batRigidBody;
 
     std::vector<std::string> sounds = {"Bell.wav",
-                                       "crane_bump.wav"};
+                                       "crane_bump.wav",
+                                       "/stage/public/share/cube/packages/sounds/free/punch1.wav"};
     std::vector<Mix_Chunk*>     mix_chunks;  // the chunks of audio
 
 #ifdef OGRE_STATIC_LIB

@@ -567,7 +567,7 @@ bool BaseApplication::mouseReleased(const OIS::MouseEvent &arg, OIS::MouseButton
         if(not batSwing)
         {
             batSwing  = true;
-            //playSound(1);
+            playSound(2);
         }
     }
 }
