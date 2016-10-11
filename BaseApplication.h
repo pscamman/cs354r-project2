@@ -181,7 +181,8 @@ protected:
 
     std::vector<std::string> sounds = {"Bell.wav",
                                        "crane_bump.wav",
-                                       "punch1.wav"};
+                                       "punch1.wav",
+                                       "wow.wav"};
     std::vector<Mix_Chunk*>     mix_chunks;  // the chunks of audio
     Mix_Music *gMusic = NULL;
 

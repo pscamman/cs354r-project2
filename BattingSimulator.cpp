@@ -28,7 +28,6 @@ BattingSimulator::BattingSimulator(void)
 BattingSimulator::~BattingSimulator(void)
 {
 }
-
 //---------------------------------------------------------------------------
 void BattingSimulator::createScene(void)
 {

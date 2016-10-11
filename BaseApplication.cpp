@@ -634,7 +634,6 @@ bool BaseApplication::mouseReleased(const OIS::MouseEvent &arg, OIS::MouseButton
         if(not batSwing)
         {
             batSwing  = true;
-            playSound(2);
 
             Ogre::Vector3 pos = mainNode->getPosition();
             btCollisionShape* batShape =  new btBoxShape(btVector3(300.0f,50.0f,50.0f));
@@ -744,7 +743,7 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
         groundB = !static_cast<Ogre::SceneNode*>(obB->getUserPointer())->getName().substr(0,6).compare("ground");
         pointA  = !static_cast<Ogre::SceneNode*>(obA->getUserPointer())->getName().substr(0,5).compare("point");
         pointB  = !static_cast<Ogre::SceneNode*>(obB->getUserPointer())->getName().substr(0,5).compare("point");
-        if(sphereA and blockB or sphereB and blockA)
+        if(sphereA and (blockB or pointB) or sphereB and (blockA or pointA))
         {
             int numContacts = contactManifold->getNumContacts();
             for(int j=0;j<numContacts;++j)
