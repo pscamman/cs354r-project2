@@ -259,6 +259,7 @@ bool BaseApplication::setupSound(void)
     gMusic = Mix_LoadMUS( "happyrock.mp3" );
     if( gMusic == NULL)
         return false;
+    Mix_PlayMusic( gMusic, -1 );
     return true;
 }
 //---------------------------------------------------------------------------
@@ -385,17 +386,10 @@ bool BaseApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
     if(batBody)
     {
         auto orient  = batBody->getOrientation();
-        std::cout << "QUATERNION"           << std::endl;
-        std::cout << "W: " << orient.getW() << std::endl;
-        std::cout << "X: " << orient.getX() << std::endl;
-        std::cout << "Y: " << orient.getY() << std::endl;
-        std::cout << "Z: " << orient.getZ() << std::endl;
-        std::cout <<                           std::endl;
         batSpinNode->setOrientation(orient.getW(),
                                     orient.getX(),
                                     orient.getY(),
                                     orient.getZ());
-        //batSpinNode->setOrientation(0,1,0,1);
     }
     if(!batSwing)
     {
@@ -527,9 +521,9 @@ bool BaseApplication::keyPressed( const OIS::KeyEvent &arg )
     else if (arg.key == OIS::KC_D)
         cameraVelocity.x = 200;
     else if (arg.key == OIS::KC_Q)
-        yawPerSec = -M_PI/4;
-    else if (arg.key == OIS::KC_E)
         yawPerSec =  M_PI/4;
+    else if (arg.key == OIS::KC_E)
+        yawPerSec = -M_PI/4;
     else if (arg.key == OIS::KC_R)
     {
         static int i = -1;
@@ -562,8 +556,22 @@ bool BaseApplication::keyPressed( const OIS::KeyEvent &arg )
         float v = std::min(1600.0f, 300.0f*charge+100.0f);
         ballBody->setUserPointer(sphereNode);
         ballBody->setRestitution(0.8f);
-        bApp->bWorld->addRigidBody(ballBody);
-        bApp->rigidBodies.insert(ballBody);
+        bWorld->addRigidBody(ballBody);
+        rigidBodies.insert(ballBody);
+        balls.push(ballBody);
+        if(balls.size() > 3)
+        {
+            auto ball = balls.front();
+            balls.pop();
+            rigidBodies.erase(ball);
+            auto sn = static_cast<Ogre::SceneNode*>(ball->getUserPointer());
+            sn->removeAndDestroyAllChildren();
+            mSceneMgr->destroySceneNode(sn);
+            bWorld->removeRigidBody(ball);
+            delete ball->getMotionState();
+            delete ball->getCollisionShape();
+            delete ball;
+        }
     } else if(arg.key == OIS::KC_M){
         if( Mix_PlayingMusic() == 0 )
                   //Play the music
@@ -634,7 +642,6 @@ bool BaseApplication::mouseReleased(const OIS::MouseEvent &arg, OIS::MouseButton
         if(not batSwing)
         {
             batSwing  = true;
-
             Ogre::Vector3 pos = mainNode->getPosition();
             btCollisionShape* batShape =  new btBoxShape(btVector3(300.0f,50.0f,50.0f));
             btDefaultMotionState* batMotionState =
@@ -735,6 +742,7 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
         bool groundB;
         bool pointA;
         bool pointB;
+        bool batA, batB;
         sphereA = !static_cast<Ogre::SceneNode*>(obA->getUserPointer())->getName().substr(0,6).compare("sphere");
         sphereB = !static_cast<Ogre::SceneNode*>(obB->getUserPointer())->getName().substr(0,6).compare("sphere");
         blockA  = !static_cast<Ogre::SceneNode*>(obA->getUserPointer())->getName().substr(0,5).compare("block");
@@ -743,6 +751,8 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
         groundB = !static_cast<Ogre::SceneNode*>(obB->getUserPointer())->getName().substr(0,6).compare("ground");
         pointA  = !static_cast<Ogre::SceneNode*>(obA->getUserPointer())->getName().substr(0,5).compare("point");
         pointB  = !static_cast<Ogre::SceneNode*>(obB->getUserPointer())->getName().substr(0,5).compare("point");
+        batA    = !static_cast<Ogre::SceneNode*>(obA->getUserPointer())->getName().substr(0,3).compare("bat");
+        batB    = !static_cast<Ogre::SceneNode*>(obB->getUserPointer())->getName().substr(0,3).compare("bat");
         if(sphereA and (blockB or pointB) or sphereB and (blockA or pointA))
         {
             int numContacts = contactManifold->getNumContacts();
@@ -751,7 +761,6 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
                 btManifoldPoint& pt = contactManifold->getContactPoint(j);
                 if (pt.getAppliedImpulse()>0.f)
                 {
-                    toRemove.insert(static_cast<btRigidBody*>(sphereA ? obA : obB));
                     bApp->playSound(1);
                     break;
                 }
@@ -766,10 +775,16 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
                 if (pt.getAppliedImpulse()>0.f)
                 {
                     toRemove.insert(static_cast<btRigidBody*>(pointA ? obA : obB));
-                    bApp->playSound(1);
+                    bApp->playSound(3);
                     break;
                 }
             }
+        }
+        if(batA and sphereB or batB and sphereA)
+        {
+            int numContacts = contactManifold->getNumContacts();
+            if(numContacts)
+                bApp->playSound(2);
         }
     }
     for(auto rb : toRemove)
