@@ -137,9 +137,12 @@ protected:
     Ogre::String                mResourcesCfg;
     Ogre::String                mPluginsCfg;
 
-    Ogre::SceneNode* testNode;
+    Ogre::SceneNode* mainNode;
+    Ogre::SceneNode* spinNode;
     Ogre::SceneNode* camNode;
     Ogre::SceneNode* batNode;
+    btRigidBody*     batBody;
+    btHingeConstraint* batHinge;
 
     float charge;
     float swing;

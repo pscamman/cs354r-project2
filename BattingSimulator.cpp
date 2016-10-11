@@ -61,32 +61,29 @@ void BattingSimulator::createScene(void)
     SceneNode* node;
     String matString = "Core/StatsBlockBorder/Up";
 
-    // create non-physical ball
-    ent = mSceneMgr->createEntity("ball", Ogre::SceneManager::PT_SPHERE);
-    ent->setMaterialName(matString);
-    ent->setCastShadows(true);
-    testNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
-    testNode->setPosition(0, 500, 0);
-    testNode->setScale(.50, .50, .50);
-    testNode->attachObject(ent);
+    // create non-physical node
+    mainNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
+    mainNode->setPosition(0, 500, 100);
 
-    // create non-physical camera node as a child of ball
-    camNode = testNode->createChildSceneNode();
+    // create rotating focal point for camera
+    spinNode = mainNode->createChildSceneNode();
+
+    // create non-physical camera node as a child of spinNode
+    camNode = spinNode->createChildSceneNode();
     camNode->attachObject(mCamera);
-    mCamera->lookAt(testNode->getPosition());
+    mCamera->lookAt(mainNode->getPosition());
     camNode->setPosition(0, 200, 1000);
     mCamera->setPosition(0, 200, 1000);
 
     // create non-physical bat as a child of ball
-    ent = mSceneMgr->createEntity("Círculo.005.mesh");
-    ent->setMaterialName("Examples/BumpyMetal");
+    ent = mSceneMgr->createEntity(Ogre::SceneManager::PT_CUBE);
+    ent->setMaterialName(matString);
     ent->setCastShadows(false);
-    batNode = testNode->createChildSceneNode();
-    batNode->setPosition(-400,-200,100);
-    batNode->setScale(28,28,28);
+    batNode = mainNode->createChildSceneNode();
+    batNode->setScale(6,1,1);
     batNode->attachObject(ent);
-    batNode->roll (Radian(Real(2)), Node::TransformSpace::TS_LOCAL);
-    batNode->pitch(Radian(Real(-1)), Node::TransformSpace::TS_LOCAL);
+    //batNode->roll (Radian(Real(2)), Node::TransformSpace::TS_LOCAL);
+    //batNode->pitch(Radian(Real(-1)), Node::TransformSpace::TS_LOCAL);
 
     // create ground
     ent = mSceneMgr->createEntity("floor", "FloorPlane");
