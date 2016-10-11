@@ -138,8 +138,9 @@ protected:
     Ogre::String                mPluginsCfg;
 
     Ogre::SceneNode* mainNode;
-    Ogre::SceneNode* spinNode;
+    Ogre::SceneNode* camSpinNode;
     Ogre::SceneNode* camNode;
+    Ogre::SceneNode* batSpinNode;
     Ogre::SceneNode* batNode;
     btRigidBody*     batBody;
     btHingeConstraint* batHinge;
@@ -180,7 +181,7 @@ protected:
 
     std::vector<std::string> sounds = {"Bell.wav",
                                        "crane_bump.wav",
-                                       "/stage/public/share/cube/packages/sounds/free/punch1.wav"};
+                                       "punch1.wav"};
     std::vector<Mix_Chunk*>     mix_chunks;  // the chunks of audio
 
 #ifdef OGRE_STATIC_LIB

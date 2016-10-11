@@ -66,24 +66,27 @@ void BattingSimulator::createScene(void)
     mainNode->setPosition(0, 500, 100);
 
     // create rotating focal point for camera
-    spinNode = mainNode->createChildSceneNode();
+    camSpinNode = mainNode->createChildSceneNode();
 
-    // create non-physical camera node as a child of spinNode
-    camNode = spinNode->createChildSceneNode();
+    // create non-physical camera node as a child of camSpinNode
+    camNode = camSpinNode->createChildSceneNode();
     camNode->attachObject(mCamera);
     mCamera->lookAt(mainNode->getPosition());
     camNode->setPosition(0, 200, 1000);
     mCamera->setPosition(0, 200, 1000);
 
-    // create non-physical bat as a child of ball
-    ent = mSceneMgr->createEntity(Ogre::SceneManager::PT_CUBE);
+    // create rotating axis point for bat
+    batSpinNode = mainNode->createChildSceneNode();
+
+    // create non-physical bat as a child of batSpinNode
+    ent = mSceneMgr->createEntity("bat.mesh");
     ent->setMaterialName(matString);
     ent->setCastShadows(false);
-    batNode = mainNode->createChildSceneNode();
-    batNode->setScale(6,1,1);
+    batNode = batSpinNode->createChildSceneNode("bat");
+    batNode->roll(Ogre::Radian(Ogre::Real((float)M_PI/2)));
+    batNode->setPosition(0,0,0);
+    batNode->setScale(14,14,14);
     batNode->attachObject(ent);
-    //batNode->roll (Radian(Real(2)), Node::TransformSpace::TS_LOCAL);
-    //batNode->pitch(Radian(Real(-1)), Node::TransformSpace::TS_LOCAL);
 
     // create ground
     ent = mSceneMgr->createEntity("floor", "FloorPlane");

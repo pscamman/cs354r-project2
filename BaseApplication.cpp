@@ -381,16 +381,26 @@ bool BaseApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
     }
     if(batBody)
     {
-        auto orient = batBody->getOrientation();
-        batNode->setOrientation(orient.getW(),
-                                orient.getX(),
-                                orient.getY(),
-                                orient.getZ());
+        auto orient  = batBody->getOrientation();
+        std::cout << "QUATERNION"           << std::endl;
+        std::cout << "W: " << orient.getW() << std::endl;
+        std::cout << "X: " << orient.getX() << std::endl;
+        std::cout << "Y: " << orient.getY() << std::endl;
+        std::cout << "Z: " << orient.getZ() << std::endl;
+        std::cout <<                           std::endl;
+        batSpinNode->setOrientation(orient.getW(),
+                                    orient.getX(),
+                                    orient.getY(),
+                                    orient.getZ());
+        //batSpinNode->setOrientation(0,1,0,1);
     }
-    spinNode->yaw(Ogre::Radian(yawPerSec * evt.timeSinceLastFrame));
-    Ogre::Vector3 currentMainPos = mainNode->getPosition();
-    currentMainPos += cameraVelocity * evt.timeSinceLastFrame;
-    mainNode->setPosition(currentMainPos);
+    if(!batSwing)
+    {
+        camSpinNode->yaw(Ogre::Radian(yawPerSec * evt.timeSinceLastFrame));
+        Ogre::Vector3 currentMainPos = mainNode->getPosition();
+        currentMainPos += cameraVelocity * evt.timeSinceLastFrame;
+        mainNode->setPosition(currentMainPos);
+    }
 
     //float scale = (4+charge)*7;
     //batNode->setScale(scale,scale,scale);
@@ -505,19 +515,19 @@ bool BaseApplication::keyPressed( const OIS::KeyEvent &arg )
     {
         mShutDown = true;
     }
-    else if (arg.key == OIS::KC_W and !batSwing)
+    else if (arg.key == OIS::KC_W)
         cameraVelocity.y = 200;
-    else if (arg.key == OIS::KC_S and !batSwing)
+    else if (arg.key == OIS::KC_S)
         cameraVelocity.y = -200;
-    else if (arg.key == OIS::KC_A and !batSwing)
+    else if (arg.key == OIS::KC_A)
         cameraVelocity.x = -200;
-    else if (arg.key == OIS::KC_D and !batSwing)
+    else if (arg.key == OIS::KC_D)
         cameraVelocity.x = 200;
-    else if (arg.key == OIS::KC_Q and !batSwing)
+    else if (arg.key == OIS::KC_Q)
         yawPerSec = -M_PI/4;
-    else if (arg.key == OIS::KC_E and !batSwing)
+    else if (arg.key == OIS::KC_E)
         yawPerSec =  M_PI/4;
-    else if (arg.key == OIS::KC_R and !batSwing)
+    else if (arg.key == OIS::KC_R)
     {
         static int i = -1;
         Ogre::Entity*    ent;
@@ -529,11 +539,11 @@ bool BaseApplication::keyPressed( const OIS::KeyEvent &arg )
         ent = mSceneMgr->createEntity("sphere"+std::to_string(++i), Ogre::SceneManager::PT_SPHERE);
         ent->setMaterialName("Examples/BumpyMetal");
         ent->setCastShadows(true);
-        sphereNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
+        sphereNode = mSceneMgr->getRootSceneNode()->createChildSceneNode("sphere"+std::to_string(++i));
         sphereNode->setPosition(pos);
-        sphereNode->setScale(.25, .25, .25);
+        sphereNode->setScale(.5, .5, .5);
         sphereNode->attachObject(ent);
-        btCollisionShape* ballShape =  new btSphereShape(12.5);
+        btCollisionShape* ballShape =  new btSphereShape(25);
         btDefaultMotionState* ballMotionState =
             new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1),
                                      btVector3(pos.x, pos.y, pos.z)));
@@ -611,7 +621,7 @@ bool BaseApplication::mouseReleased(const OIS::MouseEvent &arg, OIS::MouseButton
             btCollisionShape* batShape =  new btBoxShape(btVector3(300.0f,50.0f,50.0f));
             btDefaultMotionState* batMotionState =
                         new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1),
-                                                 btVector3(pos.x, pos.y, pos.z)));
+                                                 btVector3(pos.x+200, pos.y, pos.z)));
             btScalar bmass (100.0);
             btVector3 fallInertia(0, 0, 0);
             batShape->calculateLocalInertia(bmass, fallInertia);
@@ -619,11 +629,11 @@ bool BaseApplication::mouseReleased(const OIS::MouseEvent &arg, OIS::MouseButton
             batBody = new btRigidBody(batRBCI);
             batBody->setUserPointer(batNode);
             batBody->setRestitution(0.8f);
-            batBody->setAngularVelocity(btVector3(0, 100, 0));
+            batBody->setAngularVelocity(btVector3(0, 4*M_PI, 0));
             bWorld->addRigidBody(batBody);
 
             batHinge = new btHingeConstraint(*batBody,
-                                             btVector3(pos.x-300, pos.y, pos.z),
+                                             btVector3(-200, 0, 0),
                                              btVector3(0,1,0));
             bWorld->addConstraint(batHinge);
         }
@@ -679,8 +689,8 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
             bApp->charge = 0.0f;
             bApp->swing  = 0.0f;
             bApp->batSwing = false;
-            bApp->batNode->setPosition(0, 0, 0);
-            bApp->batNode->setOrientation(0, 0, 0, 1);
+            bApp->batSpinNode->setOrientation(0, 0, 0, 1);
+            bApp->batSpinNode->yaw(Ogre::Radian(Ogre::Real((float)M_PI)));
             bApp->bWorld->removeConstraint(bApp->batHinge);
             delete bApp->batHinge;
             bApp->bWorld->removeRigidBody(bApp->batBody);
