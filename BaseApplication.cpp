@@ -254,9 +254,9 @@ bool BaseApplication::setupSound(void)
     if(Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0)
         return false;
     for(const std::string& sound : sounds)
-        if(not addSound(sound)) return false;
+        if(not addSound("resource/audio/"+sound)) return false;
      //Load music
-    gMusic = Mix_LoadMUS( "happyrock.mp3" );
+    gMusic = Mix_LoadMUS( "resource/audio/happyrock.mp3" );
     if( gMusic == NULL)
         return false;
     Mix_PlayMusic( gMusic, -1 );
@@ -399,8 +399,8 @@ bool BaseApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
         mainNode->setPosition(currentMainPos);
     }
 
-    //float scale = (4+charge)*7;
-    //batNode->setScale(scale,scale,scale);
+    float scale = (4+charge*3/5)*3;
+    batNode->setScale(scale,scale,scale);
 
     mTrayMgr->frameRenderingQueued(evt);
 
@@ -531,7 +531,7 @@ bool BaseApplication::keyPressed( const OIS::KeyEvent &arg )
         Ogre::SceneNode* sphereNode;
         Ogre::Vector3 pos = bApp->mainNode->getPosition();
         pos.x += 300;
-        pos.y += 300;
+        pos.y += 1000;
         pos.z -= 100;
         ent = mSceneMgr->createEntity("sphere"+std::to_string(++i), Ogre::SceneManager::PT_SPHERE);
         ent->setMaterialName("Examples/BumpyMetal");
@@ -654,7 +654,7 @@ bool BaseApplication::mouseReleased(const OIS::MouseEvent &arg, OIS::MouseButton
             batBody = new btRigidBody(batRBCI);
             batBody->setUserPointer(batNode);
             batBody->setRestitution(0.8f);
-            batBody->setAngularVelocity(btVector3(0, 4*M_PI, 0));
+            batBody->setAngularVelocity(btVector3(0, 4+charge*3/5*M_PI, 0));
             bWorld->addRigidBody(batBody);
 
             batHinge = new btHingeConstraint(*batBody,

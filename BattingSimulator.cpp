@@ -62,7 +62,7 @@ void BattingSimulator::createScene(void)
 
     // create non-physical node
     mainNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
-    mainNode->setPosition(0, 500, 500);
+    mainNode->setPosition(0, 500, 2000);
 
     // create rotating focal point for camera
     camSpinNode = mainNode->createChildSceneNode();
@@ -115,7 +115,7 @@ void BattingSimulator::createScene(void)
     environment.insert(groundBody);
 
     // create target blocks
-    for(int i = -2; i < 3; ++i)
+    for(int i = -4; i < 5; ++i)
         for(int j = 0; j < 7; ++j)
         {
             bool pointBlock = j!=0 and (2+i+j)%2;
