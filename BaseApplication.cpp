@@ -634,8 +634,6 @@ bool BaseApplication::mouseReleased(const OIS::MouseEvent &arg, OIS::MouseButton
         if(not batSwing)
         {
             batSwing  = true;
-            playSound(2);
-
             Ogre::Vector3 pos = mainNode->getPosition();
             btCollisionShape* batShape =  new btBoxShape(btVector3(300.0f,50.0f,50.0f));
             btDefaultMotionState* batMotionState =
@@ -736,6 +734,7 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
         bool groundB;
         bool pointA;
         bool pointB;
+        bool batA, batB;
         sphereA = !static_cast<Ogre::SceneNode*>(obA->getUserPointer())->getName().substr(0,6).compare("sphere");
         sphereB = !static_cast<Ogre::SceneNode*>(obB->getUserPointer())->getName().substr(0,6).compare("sphere");
         blockA  = !static_cast<Ogre::SceneNode*>(obA->getUserPointer())->getName().substr(0,5).compare("block");
@@ -744,6 +743,8 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
         groundB = !static_cast<Ogre::SceneNode*>(obB->getUserPointer())->getName().substr(0,6).compare("ground");
         pointA  = !static_cast<Ogre::SceneNode*>(obA->getUserPointer())->getName().substr(0,5).compare("point");
         pointB  = !static_cast<Ogre::SceneNode*>(obB->getUserPointer())->getName().substr(0,5).compare("point");
+        batA    = !static_cast<Ogre::SceneNode*>(obA->getUserPointer())->getName().substr(0,3).compare("bat");
+        batB    = !static_cast<Ogre::SceneNode*>(obB->getUserPointer())->getName().substr(0,3).compare("bat");
         if(sphereA and blockB or sphereB and blockA)
         {
             int numContacts = contactManifold->getNumContacts();
@@ -771,6 +772,11 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
                     break;
                 }
             }
+        }
+        if(batA and sphereB or batB and sphereA){
+            int numContacts = contactManifold->getNumContacts();
+            if(numContacts)
+                bApp->playSound(2);
         }
     }
     for(auto rb : toRemove)
