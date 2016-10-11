@@ -255,7 +255,10 @@ bool BaseApplication::setupSound(void)
         return false;
     for(const std::string& sound : sounds)
         if(not addSound(sound)) return false;
-
+     //Load music
+    gMusic = Mix_LoadMUS( "happyrock.mp3" );
+    if( gMusic == NULL)
+        return false;
     return true;
 }
 //---------------------------------------------------------------------------
@@ -542,6 +545,10 @@ bool BaseApplication::keyPressed( const OIS::KeyEvent &arg )
         sphereNode = mSceneMgr->getRootSceneNode()->createChildSceneNode("sphere"+std::to_string(++i));
         sphereNode->setPosition(pos);
         sphereNode->setScale(.5, .5, .5);
+        Ogre::ParticleSystem* gn = mSceneMgr->createParticleSystem("GN"+std::to_string(++i), "Examples/GreenyNimbus");
+        Ogre::SceneNode* particleNode = sphereNode->createChildSceneNode("Particle"+std::to_string(++i));
+        particleNode->attachObject(gn);
+
         sphereNode->attachObject(ent);
         btCollisionShape* ballShape =  new btSphereShape(25);
         btDefaultMotionState* ballMotionState =
@@ -557,6 +564,22 @@ bool BaseApplication::keyPressed( const OIS::KeyEvent &arg )
         ballBody->setRestitution(0.8f);
         bApp->bWorld->addRigidBody(ballBody);
         bApp->rigidBodies.insert(ballBody);
+    } else if(arg.key == OIS::KC_M){
+        if( Mix_PlayingMusic() == 0 )
+                  //Play the music
+            Mix_PlayMusic( gMusic, -1 );
+        //If music is being played
+        else
+        {
+            //If the music is paused
+            if( Mix_PausedMusic() == 1 )
+                //Resume the music
+                Mix_ResumeMusic();
+            //If the music is playing
+            else
+                //Pause the music
+                Mix_PauseMusic();
+        }
     }
     //mCameraMan->injectKeyDown(arg);
     return true;
@@ -582,11 +605,7 @@ bool BaseApplication::keyReleased(const OIS::KeyEvent &arg)
 //---------------------------------------------------------------------------
 bool BaseApplication::mouseMoved(const OIS::MouseEvent &arg)
 {
-    //batNode->translate(arg.state.X.rel*0.25f, -arg.state.Y.rel*0.25f, 0);
-    //mCamera->lookAt(testNode->getPosition());
-
-    // if (mTrayMgr->injectMouseMove(arg)) return true;
-    // mCameraMan->injectMouseMove(arg);
+    camNode->translate(0,0,arg.state.Z.rel*0.25f);
     return true;
 }
 //---------------------------------------------------------------------------

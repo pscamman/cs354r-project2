@@ -183,6 +183,7 @@ protected:
                                        "crane_bump.wav",
                                        "punch1.wav"};
     std::vector<Mix_Chunk*>     mix_chunks;  // the chunks of audio
+    Mix_Music *gMusic = NULL;
 
 #ifdef OGRE_STATIC_LIB
     Ogre::StaticPluginLoader m_StaticPluginLoader;

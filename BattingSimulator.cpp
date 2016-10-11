@@ -63,7 +63,7 @@ void BattingSimulator::createScene(void)
 
     // create non-physical node
     mainNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
-    mainNode->setPosition(0, 500, 100);
+    mainNode->setPosition(0, 500, 500);
 
     // create rotating focal point for camera
     camSpinNode = mainNode->createChildSceneNode();
