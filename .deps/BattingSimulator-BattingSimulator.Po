@@ -1228,6 +1228,10 @@ BattingSimulator-BattingSimulator.o: BattingSimulator.cpp \
  /lusr/opt/cegui-0.8.4/include/cegui-0/CEGUI/widgets/././Scrollbar.h \
  /lusr/opt/cegui-0.8.4/include/cegui-0/CEGUI/widgets/./TreeItem.h \
  /lusr/opt/cegui-0.8.4/include/cegui-0/CEGUI/widgets/./VerticalLayoutContainer.h \
+ /lusr/opt/cegui-0.8.4/include/cegui-0/CEGUI/RendererModules/Ogre/Renderer.h \
+ /lusr/opt/cegui-0.8.4/include/cegui-0/CEGUI/RendererModules/Ogre/../../Renderer.h \
+ /lusr/opt/cegui-0.8.4/include/cegui-0/CEGUI/RendererModules/Ogre/../../Size.h \
+ /lusr/opt/cegui-0.8.4/include/cegui-0/CEGUI/RendererModules/Ogre/../../Vector.h \
  /usr/include/ois/OISEvents.h /usr/include/ois/OISPrereqs.h \
  /usr/include/ois/OISConfig.h /usr/include/ois/OISInputManager.h \
  /usr/include/ois/OISKeyboard.h /usr/include/ois/OISObject.h \
@@ -4008,6 +4012,14 @@ BaseApplication.h:
 /lusr/opt/cegui-0.8.4/include/cegui-0/CEGUI/widgets/./TreeItem.h:
 
 /lusr/opt/cegui-0.8.4/include/cegui-0/CEGUI/widgets/./VerticalLayoutContainer.h:
+
+/lusr/opt/cegui-0.8.4/include/cegui-0/CEGUI/RendererModules/Ogre/Renderer.h:
+
+/lusr/opt/cegui-0.8.4/include/cegui-0/CEGUI/RendererModules/Ogre/../../Renderer.h:
+
+/lusr/opt/cegui-0.8.4/include/cegui-0/CEGUI/RendererModules/Ogre/../../Size.h:
+
+/lusr/opt/cegui-0.8.4/include/cegui-0/CEGUI/RendererModules/Ogre/../../Vector.h:
 
 /usr/include/ois/OISEvents.h:
 

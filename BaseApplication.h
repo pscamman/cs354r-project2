@@ -53,6 +53,8 @@ http://www.ogre3d.org/wiki/
 
 // CEGUI
 #include <CEGUI/CEGUI.h>
+#include <CEGUI/RendererModules/Ogre/Renderer.h>
+
 // ---------------------------------------
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_APPLE
@@ -190,6 +192,11 @@ protected:
                                        "wow.wav"};
     std::vector<Mix_Chunk*>     mix_chunks;  // the chunks of audio
     Mix_Music *gMusic = NULL;
+
+    //GUI Window
+    CEGUI::OgreRenderer& mRenderer = CEGUI::OgreRenderer::bootstrapSystem();
+
+
 
 #ifdef OGRE_STATIC_LIB
     Ogre::StaticPluginLoader m_StaticPluginLoader;

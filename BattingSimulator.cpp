@@ -143,6 +143,8 @@ void BattingSimulator::createScene(void)
             bWorld->addRigidBody(blockBody);
             rigidBodies.insert(blockBody);
         }
+
+    // Create the GUI
 }
 //---------------------------------------------------------------------------
 
