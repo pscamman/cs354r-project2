@@ -50,6 +50,9 @@ http://www.ogre3d.org/wiki/
 // SDL
 #include "SDL/SDL.h"
 #include "SDL/SDL_mixer.h"
+
+// CEGUI
+#include <CEGUI/CEGUI.h>
 // ---------------------------------------
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_APPLE
