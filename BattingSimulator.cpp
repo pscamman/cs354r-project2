@@ -144,7 +144,56 @@ void BattingSimulator::createScene(void)
             rigidBodies.insert(blockBody);
         }
 
-    // Create the GUI
+    /*************************************************************************************
+    * Begin GUI Creation Block                                                           *
+    * TODO: Pull this into a class                                                       *
+    *************************************************************************************/
+    // Init GUI System
+    CEGUI::OgreRenderer* mRenderer = &CEGUI::OgreRenderer::bootstrapSystem();
+
+    // Point CEGUI to default resource locations specified in resources.cfg
+    CEGUI::ImageManager::setImagesetDefaultResourceGroup("Imagesets");
+    CEGUI::Font::setDefaultResourceGroup("Fonts");
+    CEGUI::Scheme::setDefaultResourceGroup("Schemes");
+    CEGUI::WidgetLookManager::setDefaultResourceGroup("LookNFeel");
+    CEGUI::WindowManager::setDefaultResourceGroup("Layouts");
+    CEGUI::SchemeManager::getSingleton().createFromFile("OgreTray.scheme");
+    
+    // Create a new window manager and a new window for all the GUI components
+    CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
+    CEGUI::Window *sheet = wmgr.createWindow("DefaultWindow", "CEGUIDemo/Sheet");
+
+    // Create the score window
+    CEGUI::Window *score = wmgr.createWindow("OgreTray/StaticText", "CEGUIDemo/ScoreText");
+    score->setText("Score: 0");
+    score->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.07, 0)));
+    sheet->addChild(score);
+    CEGUI::System::getSingleton().getDefaultGUIContext().setRootWindow(sheet);
+
+    // CENTER OF SCREEN LOCATED AT 0.425f, 0.465f
+    // Create the main menu
+    CEGUI::Window *sPlay = wmgr.createWindow("OgreTray/Button", "CEGUIDemo/OnePlayBtn");
+    sPlay->setText("Single Player");
+    sPlay->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.07, 0)));
+    sPlay->setPosition(CEGUI::UVector2(CEGUI::UDim(0.425f, 0), CEGUI::UDim(0.4258f, 0)));
+    sPlay->setVisible(false);
+    sheet->addChild(sPlay);
+    CEGUI::System::getSingleton().getDefaultGUIContext().setRootWindow(sheet);
+
+    CEGUI::Window *mPlay = wmgr.createWindow("OgreTray/Button", "CEGUIDemo/MulPlayBtn");
+    mPlay->setText("Multi-Player");
+    mPlay->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.07, 0)));
+    mPlay->setPosition(CEGUI::UVector2(CEGUI::UDim(0.425f, 0), CEGUI::UDim(0.5041f, 0)));
+    mPlay->setVisible(false);
+    sheet->addChild(mPlay);
+    CEGUI::System::getSingleton().getDefaultGUIContext().setRootWindow(sheet);
+
+    CEGUI::Window *pause = wmgr.createWindow("OgreTray/StaticText", "CEGUIDemo/Pause");
+    pause->setText("          Pause");
+    pause->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.07, 0)));
+    pause->setPosition(CEGUI::UVector2(CEGUI::UDim(0.425f, 0), CEGUI::UDim(0.465f, 0)));
+    sheet->addChild(pause);
+    CEGUI::System::getSingleton().getDefaultGUIContext().setRootWindow(sheet);
 }
 //---------------------------------------------------------------------------
 

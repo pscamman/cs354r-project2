@@ -2770,23 +2770,33 @@ m4trace:configure.ac:26: -1- PKG_CHECK_EXISTS([CEGUI-0 >= 0.8], [pkg_cv_[]CEGUI_
 m4trace:configure.ac:26: -1- _PKG_SHORT_ERRORS_SUPPORTED
 m4trace:configure.ac:27: -1- m4_pattern_allow([^CEGUI_CFLAGS$])
 m4trace:configure.ac:28: -1- m4_pattern_allow([^CEGUI_LIBS$])
-m4trace:configure.ac:30: -1- PKG_CHECK_MODULES([SDL_MIXER], [SDL_mixer])
-m4trace:configure.ac:30: -1- m4_pattern_allow([^SDL_MIXER_CFLAGS$])
-m4trace:configure.ac:30: -1- m4_pattern_allow([^SDL_MIXER_LIBS$])
-m4trace:configure.ac:30: -1- PKG_CHECK_EXISTS([SDL_mixer], [pkg_cv_[]SDL_MIXER_CFLAGS=`$PKG_CONFIG --[]cflags "SDL_mixer" 2>/dev/null`
+m4trace:configure.ac:30: -1- PKG_CHECK_MODULES([CEGUI_OGRE], [CEGUI-0-OGRE >= 0.7])
+m4trace:configure.ac:30: -1- m4_pattern_allow([^CEGUI_OGRE_CFLAGS$])
+m4trace:configure.ac:30: -1- m4_pattern_allow([^CEGUI_OGRE_LIBS$])
+m4trace:configure.ac:30: -1- PKG_CHECK_EXISTS([CEGUI-0-OGRE >= 0.7], [pkg_cv_[]CEGUI_OGRE_CFLAGS=`$PKG_CONFIG --[]cflags "CEGUI-0-OGRE >= 0.7" 2>/dev/null`
 		      test "x$?" != "x0" && pkg_failed=yes ], [pkg_failed=yes])
-m4trace:configure.ac:30: -1- PKG_CHECK_EXISTS([SDL_mixer], [pkg_cv_[]SDL_MIXER_LIBS=`$PKG_CONFIG --[]libs "SDL_mixer" 2>/dev/null`
+m4trace:configure.ac:30: -1- PKG_CHECK_EXISTS([CEGUI-0-OGRE >= 0.7], [pkg_cv_[]CEGUI_OGRE_LIBS=`$PKG_CONFIG --[]libs "CEGUI-0-OGRE >= 0.7" 2>/dev/null`
 		      test "x$?" != "x0" && pkg_failed=yes ], [pkg_failed=yes])
 m4trace:configure.ac:30: -1- _PKG_SHORT_ERRORS_SUPPORTED
-m4trace:configure.ac:31: -1- m4_pattern_allow([^SDL_MIXER_CFLAGS$])
-m4trace:configure.ac:32: -1- m4_pattern_allow([^SDL_MIXER_LIBS$])
-m4trace:configure.ac:35: -1- m4_pattern_allow([^LIB@&t@OBJS$])
-m4trace:configure.ac:35: -1- m4_pattern_allow([^LTLIBOBJS$])
-m4trace:configure.ac:35: -1- AM_CONDITIONAL([am__EXEEXT], [test -n "$EXEEXT"])
-m4trace:configure.ac:35: -1- m4_pattern_allow([^am__EXEEXT_TRUE$])
-m4trace:configure.ac:35: -1- m4_pattern_allow([^am__EXEEXT_FALSE$])
-m4trace:configure.ac:35: -1- _AM_SUBST_NOTMAKE([am__EXEEXT_TRUE])
-m4trace:configure.ac:35: -1- _AM_SUBST_NOTMAKE([am__EXEEXT_FALSE])
-m4trace:configure.ac:35: -1- _AC_AM_CONFIG_HEADER_HOOK(["$ac_file"])
-m4trace:configure.ac:35: -1- _AM_OUTPUT_DEPENDENCY_COMMANDS
-m4trace:configure.ac:35: -1- _LT_PROG_LTMAIN
+m4trace:configure.ac:31: -1- m4_pattern_allow([^CEGUI_OGRE_CFLAGS$])
+m4trace:configure.ac:32: -1- m4_pattern_allow([^CEGUI_OGRE_LIBS$])
+m4trace:configure.ac:34: -1- PKG_CHECK_MODULES([SDL_MIXER], [SDL_mixer])
+m4trace:configure.ac:34: -1- m4_pattern_allow([^SDL_MIXER_CFLAGS$])
+m4trace:configure.ac:34: -1- m4_pattern_allow([^SDL_MIXER_LIBS$])
+m4trace:configure.ac:34: -1- PKG_CHECK_EXISTS([SDL_mixer], [pkg_cv_[]SDL_MIXER_CFLAGS=`$PKG_CONFIG --[]cflags "SDL_mixer" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes ], [pkg_failed=yes])
+m4trace:configure.ac:34: -1- PKG_CHECK_EXISTS([SDL_mixer], [pkg_cv_[]SDL_MIXER_LIBS=`$PKG_CONFIG --[]libs "SDL_mixer" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes ], [pkg_failed=yes])
+m4trace:configure.ac:34: -1- _PKG_SHORT_ERRORS_SUPPORTED
+m4trace:configure.ac:35: -1- m4_pattern_allow([^SDL_MIXER_CFLAGS$])
+m4trace:configure.ac:36: -1- m4_pattern_allow([^SDL_MIXER_LIBS$])
+m4trace:configure.ac:39: -1- m4_pattern_allow([^LIB@&t@OBJS$])
+m4trace:configure.ac:39: -1- m4_pattern_allow([^LTLIBOBJS$])
+m4trace:configure.ac:39: -1- AM_CONDITIONAL([am__EXEEXT], [test -n "$EXEEXT"])
+m4trace:configure.ac:39: -1- m4_pattern_allow([^am__EXEEXT_TRUE$])
+m4trace:configure.ac:39: -1- m4_pattern_allow([^am__EXEEXT_FALSE$])
+m4trace:configure.ac:39: -1- _AM_SUBST_NOTMAKE([am__EXEEXT_TRUE])
+m4trace:configure.ac:39: -1- _AM_SUBST_NOTMAKE([am__EXEEXT_FALSE])
+m4trace:configure.ac:39: -1- _AC_AM_CONFIG_HEADER_HOOK(["$ac_file"])
+m4trace:configure.ac:39: -1- _AM_OUTPUT_DEPENDENCY_COMMANDS
+m4trace:configure.ac:39: -1- _LT_PROG_LTMAIN

@@ -108,7 +108,7 @@ am__DEPENDENCIES_1 =
 BattingSimulator_DEPENDENCIES = $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
@@ -212,6 +212,8 @@ CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CEGUI_CFLAGS = @CEGUI_CFLAGS@
 CEGUI_LIBS = @CEGUI_LIBS@
+CEGUI_OGRE_CFLAGS = @CEGUI_OGRE_CFLAGS@
+CEGUI_OGRE_LIBS = @CEGUI_OGRE_LIBS@
 CFLAGS = @CFLAGS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
@@ -338,9 +340,9 @@ ACLOCAL_AMFLAGS = -I m4
 noinst_HEADERS = BaseApplication.h BattingSimulator.h
 BattingSimulator_CPPFLAGS = -I$(top_srcdir)
 BattingSimulator_SOURCES = BaseApplication.cpp BattingSimulator.cpp
-BattingSimulator_CXXFLAGS = -std=c++11 $(OGRE_CFLAGS) $(OIS_CFLAGS) $(bullet_CFLAGS) $(SDL_CFLAGS) $(SDL_MIXER_CFLAGS) $(CEGUI_CFLAGS) 
-BattingSimulator_LDADD = $(OGRE_LIBS) $(OIS_LIBS) $(bullet_LIBS) $(SDL_LIBS) $(SDL_MIXER_LIBS) $(CEGUI_LIBS) 
-BattingSimulator_LDFLAGS = -lOgreOverlay -lboost_system -R/lusr/lib/cegui-0.8
+BattingSimulator_CXXFLAGS = -std=c++11 $(OGRE_CFLAGS) $(OIS_CFLAGS) $(bullet_CFLAGS) $(SDL_CFLAGS) $(SDL_MIXER_CFLAGS) $(CEGUI_CFLAGS) $(CEGUI_OGRE_CFLAGS)
+BattingSimulator_LDADD = $(OGRE_LIBS) $(OIS_LIBS) $(bullet_LIBS) $(SDL_LIBS) $(SDL_MIXER_LIBS) $(CEGUI_LIBS) $(CEGUI_OGRE_LIBS)
+BattingSimulator_LDFLAGS = -lOgreOverlay -lboost_system -R/lusr/lib/cegui-0.8 
 EXTRA_DIST = buildit makeit
 AUTOMAKE_OPTIONS = foreign
 all: config.h

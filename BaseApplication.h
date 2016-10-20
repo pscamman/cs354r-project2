@@ -193,11 +193,6 @@ protected:
     std::vector<Mix_Chunk*>     mix_chunks;  // the chunks of audio
     Mix_Music *gMusic = NULL;
 
-    //GUI Window
-    CEGUI::OgreRenderer& mRenderer = CEGUI::OgreRenderer::bootstrapSystem();
-
-
-
 #ifdef OGRE_STATIC_LIB
     Ogre::StaticPluginLoader m_StaticPluginLoader;
 #endif
