@@ -157,22 +157,159 @@ void BattingSimulator::createScene(void)
     CEGUI::Scheme::setDefaultResourceGroup("Schemes");
     CEGUI::WidgetLookManager::setDefaultResourceGroup("LookNFeel");
     CEGUI::WindowManager::setDefaultResourceGroup("Layouts");
-    CEGUI::SchemeManager::getSingleton().createFromFile("OgreTray.scheme");
+    CEGUI::SchemeManager::getSingleton().createFromFile("TaharezLook.scheme");
     
     // Create a new window manager and a new window for all the GUI components
     CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
     CEGUI::Window *sheet = wmgr.createWindow("DefaultWindow", "CEGUIDemo/Sheet");
 
-    // Create the score window
-    CEGUI::Window *score = wmgr.createWindow("OgreTray/StaticText", "CEGUIDemo/ScoreText");
-    score->setText("Score: 0");
-    score->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.07, 0)));
-    sheet->addChild(score);
+
+
+    // Create the title screen
+    CEGUI::Texture* title_texture;
+    CEGUI::BasicImage* title_image;
+
+    CEGUI::Window *title = wmgr.createWindow("TaharezLook/ImageButton", "CEGUIDemo/title");
+    title->setSize(CEGUI::USize(CEGUI::UDim(1.0, 0), CEGUI::UDim(1.0, 0)));
+    title->setVisible(false);
+
+    title_texture = &CEGUI::System::getSingleton().getRenderer()->createTexture("titlet", "title.jpg", "");
+    title_image = (CEGUI::BasicImage*)( &CEGUI::ImageManager::getSingleton().create("BasicImage","titlei"));
+
+    title_image->setArea(CEGUI::Rectf(CEGUI::Vector2f(0.0f, 0.0f), title_texture->getOriginalDataSize()));
+    title_image->setTexture(title_texture);
+
+    sheet->addChild(title);
+    CEGUI::System::getSingleton().getDefaultGUIContext().setRootWindow(sheet);
+
+    title->setProperty("NormalImage", "titlei");
+
+    // Create the image for player 1's score window
+    CEGUI::Texture* scorer_texture;
+    CEGUI::BasicImage* scorer_image;
+
+    CEGUI::Window *scorer = wmgr.createWindow("TaharezLook/ImageButton", "CEGUIDemo/scorer");
+    scorer->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.07, 0)));
+    scorer->setPosition(CEGUI::UVector2(CEGUI::UDim(0.0f, 0), CEGUI::UDim(0.0f, 0)));
+    scorer->setVisible(true);
+
+    scorer_texture = &CEGUI::System::getSingleton().getRenderer()->createTexture("scorert", "scorer.png", "");
+    scorer_image = (CEGUI::BasicImage*)( &CEGUI::ImageManager::getSingleton().create("BasicImage","scoreri"));
+
+    scorer_image->setArea(CEGUI::Rectf(CEGUI::Vector2f(0.0f, 0.0f), scorer_texture->getOriginalDataSize()));
+    scorer_image->setTexture(scorer_texture);
+
+    sheet->addChild(scorer);
+    CEGUI::System::getSingleton().getDefaultGUIContext().setRootWindow(sheet);
+
+    scorer->setProperty("NormalImage", "scoreri");
+
+    // Create the text for player 1's score window
+    CEGUI::Window *scorer_text = wmgr.createWindow("TaharezLook/StaticText", "CEGUIDemo/ScorerText");
+    scorer_text->setText("[colour='FF000000']0");
+    scorer_text->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.07, 0))); 
+    scorer_text->setPosition(CEGUI::UVector2(CEGUI::UDim(0.055f, 0), CEGUI::UDim(0.0f, 0)));
+    scorer_text->setProperty("BackgroundEnabled", "false");
+    scorer_text->setProperty("FrameEnabled", "false");
+    sheet->addChild(scorer_text);
+    CEGUI::System::getSingleton().getDefaultGUIContext().setRootWindow(sheet);
+
+    // Create the image for player 2's score window
+    CEGUI::Texture* scoreb_texture;
+    CEGUI::BasicImage* scoreb_image;
+
+    CEGUI::Window *scoreb = wmgr.createWindow("TaharezLook/ImageButton", "CEGUIDemo/scoreb");
+    scoreb->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.07, 0)));
+    scoreb->setPosition(CEGUI::UVector2(CEGUI::UDim(0.1583f, 0), CEGUI::UDim(0.0f, 0)));
+    scoreb->setVisible(false);
+
+    scoreb_texture = &CEGUI::System::getSingleton().getRenderer()->createTexture("scorebt", "scoreb.png", "");
+    scoreb_image = (CEGUI::BasicImage*)( &CEGUI::ImageManager::getSingleton().create("BasicImage","scorebi"));
+
+    scoreb_image->setArea(CEGUI::Rectf(CEGUI::Vector2f(0.0f, 0.0f), scoreb_texture->getOriginalDataSize()));
+    scoreb_image->setTexture(scoreb_texture);
+
+    sheet->addChild(scoreb);
+    CEGUI::System::getSingleton().getDefaultGUIContext().setRootWindow(sheet);
+
+    scoreb->setProperty("NormalImage", "scorebi");
+
+    // Create the text for player 2's score window
+    CEGUI::Window *scoreb_text = wmgr.createWindow("TaharezLook/StaticText", "CEGUIDemo/ScorebText");
+    scoreb_text->setText("[colour='FF000000']0");
+    scoreb_text->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.07, 0))); 
+    scoreb_text->setPosition(CEGUI::UVector2(CEGUI::UDim(0.2133f, 0), CEGUI::UDim(0.0f, 0)));
+    scoreb_text->setProperty("BackgroundEnabled", "false");
+    scoreb_text->setProperty("FrameEnabled", "false");
+    scoreb_text->setVisible(false);
+    sheet->addChild(scoreb_text);
+    CEGUI::System::getSingleton().getDefaultGUIContext().setRootWindow(sheet);
+
+    // Create the image for player 3's score window 0.158333333
+    CEGUI::Texture* scoreg_texture;
+    CEGUI::BasicImage* scoreg_image;
+
+    CEGUI::Window *scoreg = wmgr.createWindow("TaharezLook/ImageButton", "CEGUIDemo/scoreg");
+    scoreg->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.07, 0)));
+    scoreg->setPosition(CEGUI::UVector2(CEGUI::UDim(0.3167f, 0), CEGUI::UDim(0.0f, 0)));
+    scoreg->setVisible(false);
+
+    scoreg_texture = &CEGUI::System::getSingleton().getRenderer()->createTexture("scoregt", "scoreg.png", "");
+    scoreg_image = (CEGUI::BasicImage*)( &CEGUI::ImageManager::getSingleton().create("BasicImage","scoregi"));
+
+    scoreg_image->setArea(CEGUI::Rectf(CEGUI::Vector2f(0.0f, 0.0f), scoreg_texture->getOriginalDataSize()));
+    scoreg_image->setTexture(scoreg_texture);
+
+    sheet->addChild(scoreg);
+    CEGUI::System::getSingleton().getDefaultGUIContext().setRootWindow(sheet);
+
+    scoreg->setProperty("NormalImage", "scoregi");
+
+    // Create the text for player 3's score window
+    CEGUI::Window *scoreg_text = wmgr.createWindow("TaharezLook/StaticText", "CEGUIDemo/scoregText");
+    scoreg_text->setText("[colour='FF000000']0");
+    scoreg_text->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.07, 0))); 
+    scoreg_text->setPosition(CEGUI::UVector2(CEGUI::UDim(0.37167f, 0), CEGUI::UDim(0.0f, 0)));
+    scoreg_text->setProperty("BackgroundEnabled", "false");
+    scoreg_text->setProperty("FrameEnabled", "false");
+    scoreg_text->setVisible(false);
+    sheet->addChild(scoreg_text);
+    CEGUI::System::getSingleton().getDefaultGUIContext().setRootWindow(sheet);
+
+    // Create the image for player 4's score window
+    CEGUI::Texture* scorey_texture;
+    CEGUI::BasicImage* scorey_image;
+
+    CEGUI::Window *scorey = wmgr.createWindow("TaharezLook/ImageButton", "CEGUIDemo/scorey");
+    scorey->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.07, 0)));
+    scorey->setPosition(CEGUI::UVector2(CEGUI::UDim(0.475f, 0), CEGUI::UDim(0.0f, 0)));
+    scorey->setVisible(false);
+
+    scorey_texture = &CEGUI::System::getSingleton().getRenderer()->createTexture("scoreyt", "scorey.png", "");
+    scorey_image = (CEGUI::BasicImage*)( &CEGUI::ImageManager::getSingleton().create("BasicImage","scoreyi"));
+
+    scorey_image->setArea(CEGUI::Rectf(CEGUI::Vector2f(0.0f, 0.0f), scorey_texture->getOriginalDataSize()));
+    scorey_image->setTexture(scorey_texture);
+
+    sheet->addChild(scorey);
+    CEGUI::System::getSingleton().getDefaultGUIContext().setRootWindow(sheet);
+
+    scorey->setProperty("NormalImage", "scoreyi");
+
+    // Create the text for player 4's score window
+    CEGUI::Window *scorey_text = wmgr.createWindow("TaharezLook/StaticText", "CEGUIDemo/scoreyText");
+    scorey_text->setText("[colour='FF000000']0");
+    scorey_text->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.07, 0))); 
+    scorey_text->setPosition(CEGUI::UVector2(CEGUI::UDim(0.53f, 0), CEGUI::UDim(0.0f, 0)));
+    scorey_text->setProperty("BackgroundEnabled", "false");
+    scorey_text->setProperty("FrameEnabled", "false");
+    scorey_text->setVisible(false);
+    sheet->addChild(scorey_text);
     CEGUI::System::getSingleton().getDefaultGUIContext().setRootWindow(sheet);
 
     // CENTER OF SCREEN LOCATED AT 0.425f, 0.465f
     // Create the main menu
-    CEGUI::Window *sPlay = wmgr.createWindow("OgreTray/Button", "CEGUIDemo/OnePlayBtn");
+    CEGUI::Window *sPlay = wmgr.createWindow("TaharezLook/Button", "CEGUIDemo/OnePlayBtn");
     sPlay->setText("Single Player");
     sPlay->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.07, 0)));
     sPlay->setPosition(CEGUI::UVector2(CEGUI::UDim(0.425f, 0), CEGUI::UDim(0.4258f, 0)));
@@ -180,7 +317,7 @@ void BattingSimulator::createScene(void)
     sheet->addChild(sPlay);
     CEGUI::System::getSingleton().getDefaultGUIContext().setRootWindow(sheet);
 
-    CEGUI::Window *mPlay = wmgr.createWindow("OgreTray/Button", "CEGUIDemo/MulPlayBtn");
+    CEGUI::Window *mPlay = wmgr.createWindow("TaharezLook/Button", "CEGUIDemo/MulPlayBtn");
     mPlay->setText("Multi-Player");
     mPlay->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.07, 0)));
     mPlay->setPosition(CEGUI::UVector2(CEGUI::UDim(0.425f, 0), CEGUI::UDim(0.5041f, 0)));
@@ -188,12 +325,47 @@ void BattingSimulator::createScene(void)
     sheet->addChild(mPlay);
     CEGUI::System::getSingleton().getDefaultGUIContext().setRootWindow(sheet);
 
-    CEGUI::Window *pause = wmgr.createWindow("OgreTray/StaticText", "CEGUIDemo/Pause");
+    /*
+    CEGUI::Window *pause = wmgr.createWindow("TaharezLook/ImageButton", "CEGUIDemo/pause");
     pause->setText("          Pause");
     pause->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.07, 0)));
     pause->setPosition(CEGUI::UVector2(CEGUI::UDim(0.425f, 0), CEGUI::UDim(0.465f, 0)));
+    pause->setVisible(true);
     sheet->addChild(pause);
     CEGUI::System::getSingleton().getDefaultGUIContext().setRootWindow(sheet);
+    */
+
+    // Create Image for pause menu (We need a separate image for each button state but only 1 here)
+    CEGUI::Texture* pause_texture;
+    CEGUI::BasicImage* pause_image;
+
+    CEGUI::Window *pause = wmgr.createWindow("TaharezLook/ImageButton", "CEGUIDemo/pause");
+    pause->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.07, 0)));
+    pause->setPosition(CEGUI::UVector2(CEGUI::UDim(0.425f, 0), CEGUI::UDim(0.465f, 0)));
+    pause->setVisible(true);
+
+    pause_texture = &CEGUI::System::getSingleton().getRenderer()->createTexture("pauset", "pause.png", "");
+    pause_image = (CEGUI::BasicImage*)( &CEGUI::ImageManager::getSingleton().create("BasicImage","pausei"));
+
+    pause_image->setArea(CEGUI::Rectf(CEGUI::Vector2f(0.0f, 0.0f), pause_texture->getOriginalDataSize()));
+    pause_image->setTexture(pause_texture);
+
+    sheet->addChild(pause);
+    CEGUI::System::getSingleton().getDefaultGUIContext().setRootWindow(sheet);
+
+    pause->setProperty("NormalImage", "pausei");
+
+    // Create the text for the pause window (yes this has to be done separately OMFG)
+    CEGUI::Window *pause_text = wmgr.createWindow("TaharezLook/StaticText", "CEGUIDemo/ScoreText");
+    pause_text->setText("Pause");
+    pause_text->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.07, 0))); 
+    pause_text->setPosition(CEGUI::UVector2(CEGUI::UDim(0.480f, 0), CEGUI::UDim(0.465f, 0)));
+    pause_text->setProperty("BackgroundEnabled", "false");
+    pause_text->setProperty("FrameEnabled", "false");
+    sheet->addChild(pause_text);
+    CEGUI::System::getSingleton().getDefaultGUIContext().setRootWindow(sheet);
+
+
 }
 //---------------------------------------------------------------------------
 
