@@ -171,7 +171,7 @@ void BattingSimulator::createScene(void)
 
     CEGUI::Window *title = wmgr.createWindow("TaharezLook/ImageButton", "CEGUIDemo/title");
     title->setSize(CEGUI::USize(CEGUI::UDim(1.0, 0), CEGUI::UDim(1.0, 0)));
-    title->setVisible(false);
+    title->setVisible(true);
 
     title_texture = &CEGUI::System::getSingleton().getRenderer()->createTexture("titlet", "title.jpg", "");
     title_image = (CEGUI::BasicImage*)( &CEGUI::ImageManager::getSingleton().create("BasicImage","titlei"));
@@ -191,7 +191,7 @@ void BattingSimulator::createScene(void)
     CEGUI::Window *scorer = wmgr.createWindow("TaharezLook/ImageButton", "CEGUIDemo/scorer");
     scorer->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.07, 0)));
     scorer->setPosition(CEGUI::UVector2(CEGUI::UDim(0.0f, 0), CEGUI::UDim(0.0f, 0)));
-    scorer->setVisible(true);
+    scorer->setVisible(false);
 
     scorer_texture = &CEGUI::System::getSingleton().getRenderer()->createTexture("scorert", "scorer.png", "");
     scorer_image = (CEGUI::BasicImage*)( &CEGUI::ImageManager::getSingleton().create("BasicImage","scoreri"));
@@ -309,13 +309,41 @@ void BattingSimulator::createScene(void)
 
     // CENTER OF SCREEN LOCATED AT 0.425f, 0.465f
     // Create the main menu
-    CEGUI::Window *sPlay = wmgr.createWindow("TaharezLook/Button", "CEGUIDemo/OnePlayBtn");
-    sPlay->setText("Single Player");
-    sPlay->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.07, 0)));
-    sPlay->setPosition(CEGUI::UVector2(CEGUI::UDim(0.425f, 0), CEGUI::UDim(0.4258f, 0)));
-    sPlay->setVisible(false);
-    sheet->addChild(sPlay);
+    // Create the option for single player
+    CEGUI::Texture* splay_texture_up; 
+    CEGUI::Texture* splay_texture_down; 
+    CEGUI::Texture* splay_texture_hover; 
+
+    CEGUI::BasicImage* splay_image_up;
+    CEGUI::BasicImage* splay_image_down;
+    CEGUI::BasicImage* splay_image_hover;
+
+    CEGUI::Window *splay = wmgr.createWindow("TaharezLook/ImageButton", "CEGUIDemo/splay");
+    splay->setSize(CEGUI::USize(CEGUI::UDim(0.382f, 0), CEGUI::UDim(0.273f, 0))); //<---------------------------------------------- WORKING HERE
+    splay->setPosition(CEGUI::UVector2(CEGUI::UDim(0.20f, 0), CEGUI::UDim(0.33f, 0)));
+    splay->setVisible(true);
+
+    splay_texture_up = &CEGUI::System::getSingleton().getRenderer()->createTexture("splayt_up", "splay-up.png", "");
+    splay_texture_down = &CEGUI::System::getSingleton().getRenderer()->createTexture("splayt_down", "splay-down.png", "");
+    splay_texture_hover = &CEGUI::System::getSingleton().getRenderer()->createTexture("splayt_hover", "splay-hover.png", "");
+
+    splay_image_up = (CEGUI::BasicImage*)( &CEGUI::ImageManager::getSingleton().create("BasicImage","splayi_up"));
+    splay_image_down = (CEGUI::BasicImage*)( &CEGUI::ImageManager::getSingleton().create("BasicImage","splayi_down"));
+    splay_image_hover = (CEGUI::BasicImage*)( &CEGUI::ImageManager::getSingleton().create("BasicImage","splayi_hover"));
+
+    splay_image_up->setArea(CEGUI::Rectf(CEGUI::Vector2f(0.0f, 0.0f), splay_texture_up->getOriginalDataSize()));
+    splay_image_up->setTexture(splay_texture_up);
+    splay_image_down->setArea(CEGUI::Rectf(CEGUI::Vector2f(0.0f, 0.0f), splay_texture_down->getOriginalDataSize()));
+    splay_image_down->setTexture(splay_texture_down);
+    splay_image_hover->setArea(CEGUI::Rectf(CEGUI::Vector2f(0.0f, 0.0f), splay_texture_hover->getOriginalDataSize()));
+    splay_image_hover->setTexture(splay_texture_hover);
+
+    sheet->addChild(splay);
     CEGUI::System::getSingleton().getDefaultGUIContext().setRootWindow(sheet);
+
+    splay->setProperty("NormalImage", "splayi_up");
+    splay->setProperty("HoverImage", "splayi_hover");
+    splay->setProperty("PushedImage", "splayi_down");
 
     CEGUI::Window *mPlay = wmgr.createWindow("TaharezLook/Button", "CEGUIDemo/MulPlayBtn");
     mPlay->setText("Multi-Player");
@@ -342,7 +370,7 @@ void BattingSimulator::createScene(void)
     CEGUI::Window *pause = wmgr.createWindow("TaharezLook/ImageButton", "CEGUIDemo/pause");
     pause->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.07, 0)));
     pause->setPosition(CEGUI::UVector2(CEGUI::UDim(0.425f, 0), CEGUI::UDim(0.465f, 0)));
-    pause->setVisible(true);
+    pause->setVisible(false);
 
     pause_texture = &CEGUI::System::getSingleton().getRenderer()->createTexture("pauset", "pause.png", "");
     pause_image = (CEGUI::BasicImage*)( &CEGUI::ImageManager::getSingleton().create("BasicImage","pausei"));
@@ -362,6 +390,7 @@ void BattingSimulator::createScene(void)
     pause_text->setPosition(CEGUI::UVector2(CEGUI::UDim(0.480f, 0), CEGUI::UDim(0.465f, 0)));
     pause_text->setProperty("BackgroundEnabled", "false");
     pause_text->setProperty("FrameEnabled", "false");
+    pause_text->setVisible(false);
     sheet->addChild(pause_text);
     CEGUI::System::getSingleton().getDefaultGUIContext().setRootWindow(sheet);
 
