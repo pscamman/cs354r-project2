@@ -50,8 +50,10 @@ http://www.ogre3d.org/wiki/
 // SDL
 #include "SDL/SDL.h"
 #include "SDL/SDL_mixer.h"
-// ---------------------------------------
+//#include "SDL/SDL_net.h"
+#include "NetManager.h"
 
+// ---------------------------------------
 #if OGRE_PLATFORM == OGRE_PLATFORM_APPLE
 #  include <OIS/OISEvents.h>
 #  include <OIS/OISInputManager.h>
@@ -187,6 +189,8 @@ protected:
                                        "wow.wav"};
     std::vector<Mix_Chunk*>     mix_chunks;  // the chunks of audio
     Mix_Music *gMusic = NULL;
+
+    NetManager nMan;
 
 #ifdef OGRE_STATIC_LIB
     Ogre::StaticPluginLoader m_StaticPluginLoader;

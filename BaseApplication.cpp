@@ -313,16 +313,30 @@ void BaseApplication::go(void)
 #endif
 
     if (!setup())
+    {
+        nMan.stopServer();
         return;
+    }
     mRoot->startRendering();
     // Clean up
     closeSound();
+    nMan.stopServer();
     destroyScene();
 }
 //---------------------------------------------------------------------------
 bool BaseApplication::setup(void)
 {
     bool carryOn;
+
+    carryOn = nMan.initNetManager();
+    if (!carryOn) return false;
+
+    nMan.addNetworkInfo(PROTOCOL_ALL, NULL, 51215);
+
+    carryOn = nMan.startServer();
+    if (!carryOn) return false;
+
+    std::cout << "Host output: " << nMan.getHostname() << " " << nMan.getIPstring() << std::endl;
 
     carryOn = setupSound();
     if (!carryOn) return false;
