@@ -312,15 +312,11 @@ void BaseApplication::go(void)
 #endif
 #endif
 
-    if (!setup())
-    {
-        nMan.stopServer();
-        return;
-    }
-    mRoot->startRendering();
+    if (setup())
+        mRoot->startRendering();
     // Clean up
     closeSound();
-    nMan.stopServer();
+    nMan.close();
     destroyScene();
 }
 //---------------------------------------------------------------------------
@@ -328,25 +324,46 @@ bool BaseApplication::setup(void)
 {
     bool carryOn;
 
+    std::cout << "Hosting? y/n" << std::endl;
+    std::string h;
+    while(h.compare("y") and h.compare("n"))
+        std::getline(std::cin, h);
+
     carryOn = nMan.initNetManager();
-    if (!carryOn) return false;
+    if(!carryOn) return false;
 
-    nMan.addNetworkInfo(PROTOCOL_ALL, NULL, 51215);
-
-    carryOn = nMan.startServer();
-    if (!carryOn) return false;
-
-    std::cout << "Host output: " << nMan.getHostname() << " " << nMan.getIPstring() << std::endl;
+    if(h.compare("y") == 0)
+    {
+        nMan.addNetworkInfo(PROTOCOL_ALL, NULL,        51215);
+        carryOn = nMan.startServer();
+        if(!carryOn) return false;
+    }
+    else
+    {
+        std::string ip;
+        do
+        {
+            std::cout << "Host IP?" << std::endl;
+            nMan.close();
+            carryOn = nMan.initNetManager();
+            if(!carryOn) return false;
+            std::getline(std::cin, ip);
+            nMan.addNetworkInfo(PROTOCOL_ALL, ip.c_str(), 51215);
+            carryOn = nMan.startClient();
+        }
+        while(!carryOn);
+        std::cout << "Hostname: " << nMan.getHostname() << std::endl;
+    }
 
     carryOn = setupSound();
-    if (!carryOn) return false;
+    if(!carryOn) return false;
 
     mRoot = new Ogre::Root(mPluginsCfg);
 
     setupResources();
 
     carryOn = configure();
-    if (!carryOn) return false;
+    if(!carryOn) return false;
 
     chooseSceneManager();
     createCamera();
