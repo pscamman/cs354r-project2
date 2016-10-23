@@ -401,7 +401,9 @@ bool BaseApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
 
     float scale = (4+charge*3/5)*3;
     batNode->setScale(scale,scale,scale);
-
+    for(int i = 0; i < AIObjects.size(); ++i){
+        AIObjects[i]->patrol();
+    }
     mTrayMgr->frameRenderingQueued(evt);
 
     if (!mTrayMgr->isDialogVisible())
@@ -743,6 +745,9 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
         bool pointA;
         bool pointB;
         bool batA, batB;
+        bool ogreA, ogreB;
+        ogreA = !static_cast<Ogre::SceneNode*>(obA->getUserPointer())->getName().substr(0,6).compare("ogre");
+        ogreB = !static_cast<Ogre::SceneNode*>(obB->getUserPointer())->getName().substr(0,6).compare("ogre");    
         sphereA = !static_cast<Ogre::SceneNode*>(obA->getUserPointer())->getName().substr(0,6).compare("sphere");
         sphereB = !static_cast<Ogre::SceneNode*>(obB->getUserPointer())->getName().substr(0,6).compare("sphere");
         blockA  = !static_cast<Ogre::SceneNode*>(obA->getUserPointer())->getName().substr(0,5).compare("block");
@@ -785,6 +790,23 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
             int numContacts = contactManifold->getNumContacts();
             if(numContacts)
                 bApp->playSound(2);
+            break;
+        }
+        if(ogreA and sphereB or ogreB and sphereA)
+        {
+            int numContacts = contactManifold->getNumContacts();
+            for(int j=0;j<numContacts;++j)
+            {
+                btManifoldPoint& pt = contactManifold->getContactPoint(j);
+                if (pt.getAppliedImpulse()>0.f)
+                {
+                    delete bApp->AIObjects[0];
+                    toRemove.insert(static_cast<btRigidBody*>(ogreA ? obA : obB));
+                    bApp->playSound(3);
+                    break;
+                }
+            }
+
         }
     }
     for(auto rb : toRemove)

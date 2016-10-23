@@ -31,7 +31,6 @@ http://www.ogre3d.org/wiki/
 #include <OgreRenderWindow.h>
 #include <OgreConfigFile.h>
 #include <btBulletDynamicsCommon.h>
-
 // ------------- our includes ------------
 // ogre
 #include <OgrePlane.h>
@@ -50,6 +49,7 @@ http://www.ogre3d.org/wiki/
 // SDL
 #include "SDL/SDL.h"
 #include "SDL/SDL_mixer.h"
+#include "AI.h"
 // ---------------------------------------
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_APPLE
@@ -187,6 +187,8 @@ protected:
                                        "wow.wav"};
     std::vector<Mix_Chunk*>     mix_chunks;  // the chunks of audio
     Mix_Music *gMusic = NULL;
+
+    std::vector<AI*> AIObjects;
 
 #ifdef OGRE_STATIC_LIB
     Ogre::StaticPluginLoader m_StaticPluginLoader;
