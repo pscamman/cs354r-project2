@@ -730,6 +730,7 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
 
     int numManifolds = bApp->bWorld->getDispatcher()->getNumManifolds();
     std::unordered_set<btRigidBody*> toRemove;
+    bool ptisys = false;
     for(int i=0;i<numManifolds;++i)
     {
         btPersistentManifold* contactManifold =  bApp->bWorld->getDispatcher()->getManifoldByIndexInternal(i);
@@ -766,6 +767,7 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
                 btManifoldPoint& pt = contactManifold->getContactPoint(j);
                 if (pt.getAppliedImpulse()>0.f)
                 {
+                   
                     bApp->playSound(1);
                     break;
                 }
@@ -779,7 +781,7 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
                 btManifoldPoint& pt = contactManifold->getContactPoint(j);
                 if (pt.getAppliedImpulse()>0.f)
                 {
-                    bApp->AIObjects[0]->vulnerable();
+                    // bApp->AIObjects[0]->vulnerable();
                     toRemove.insert(static_cast<btRigidBody*>(pointA ? obA : obB));
                     bApp->playSound(3);
                     break;
@@ -789,8 +791,12 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
         if(batA and sphereB or batB and sphereA)
         {
             int numContacts = contactManifold->getNumContacts();
-            if(numContacts)
+            if(numContacts){
+                // ptisys = true;
+                // Ogre::ParticleSystem* gn = bApp->mSceneMgr->createParticleSystem("pts", "Examples/PurpleFountain");
+                // static_cast<Ogre::SceneNode*>(obA->getUserPointer())->createChildSceneNode("Particle")->attachObject(gn);
                 bApp->playSound(2);
+            }
             break;
         }
         if(ogreA and sphereB or ogreB and sphereA)
@@ -799,7 +805,7 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
             if (numContacts)
             {
                 for(int i = 0; i < bApp->AIObjects.size(); ++i){
-                    if(bApp->AIObjects[i]->name == "ogre" && bApp->AIObjects[i]->vulnerability){
+                    if(bApp->AIObjects[i]->name == "ogre" ){
                         delete bApp->AIObjects[i];
                         bApp->AIObjects.erase(bApp->AIObjects.begin()+i);
                     }
@@ -809,6 +815,8 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
             }          
         }
     }
+    // if(ptisys)
+    //     bApp->mSceneMgr->destroyParticleSystem("pts");       
     for(auto rb : toRemove)
     {
         auto sn = static_cast<Ogre::SceneNode*>(rb->getUserPointer());
@@ -820,5 +828,6 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
         delete rb->getCollisionShape();
         delete rb;
     }
+
 }
 //---------------------------------------------------------------------------

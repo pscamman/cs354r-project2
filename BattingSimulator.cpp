@@ -148,9 +148,9 @@ void BattingSimulator::createScene(void)
     node = mSceneMgr->getRootSceneNode()->createChildSceneNode("ogre");
     node->attachObject(ent);
     node->setScale(4,4,4);
-    Vector3 pos(0,250,0);
+    Vector3 pos(0,50,0);
     node->setPosition(pos);
-    btCollisionShape* blockShape =  new btBoxShape(btVector3(50.0f,50.0f,50.0f));
+    btCollisionShape* blockShape =  new btBoxShape(btVector3(75.0f,75.0f,75.0f));
     btDefaultMotionState* blockMotionState =
                 new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1),
                                          btVector3(pos.x,pos.y,pos.z)));
