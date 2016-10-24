@@ -16,6 +16,7 @@ http://www.ogre3d.org/wiki/
 */
 
 #include "BattingSimulator.h"
+#include "BaseApplication.h"
 
 // globals, extern variables from BaseApplication.h
 BaseApplication* bApp;
@@ -158,7 +159,8 @@ void BattingSimulator::createScene(void)
     CEGUI::WidgetLookManager::setDefaultResourceGroup("LookNFeel");
     CEGUI::WindowManager::setDefaultResourceGroup("Layouts");
     CEGUI::SchemeManager::getSingleton().createFromFile("TaharezLook.scheme");
-    
+    CEGUI::System::getSingleton().getDefaultGUIContext().getMouseCursor().setDefaultImage("TaharezLook/MouseArrow");
+
     // Create a new window manager and a new window for all the GUI components
     CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
     CEGUI::Window *sheet = wmgr.createWindow("DefaultWindow", "CEGUIDemo/Sheet");
@@ -211,6 +213,7 @@ void BattingSimulator::createScene(void)
     scorer_text->setPosition(CEGUI::UVector2(CEGUI::UDim(0.055f, 0), CEGUI::UDim(0.0f, 0)));
     scorer_text->setProperty("BackgroundEnabled", "false");
     scorer_text->setProperty("FrameEnabled", "false");
+    scorer_text->setVisible(false);
     sheet->addChild(scorer_text);
     CEGUI::System::getSingleton().getDefaultGUIContext().setRootWindow(sheet);
 
@@ -319,8 +322,8 @@ void BattingSimulator::createScene(void)
     CEGUI::BasicImage* splay_image_hover;
 
     CEGUI::Window *splay = wmgr.createWindow("TaharezLook/ImageButton", "CEGUIDemo/splay");
-    splay->setSize(CEGUI::USize(CEGUI::UDim(0.382f, 0), CEGUI::UDim(0.273f, 0))); //<---------------------------------------------- WORKING HERE
-    splay->setPosition(CEGUI::UVector2(CEGUI::UDim(0.20f, 0), CEGUI::UDim(0.33f, 0)));
+    splay->setSize(CEGUI::USize(CEGUI::UDim(0.524f, 0), CEGUI::UDim(0.252f, 0))); //<---------------------------------------------- WORKING HERE
+    splay->setPosition(CEGUI::UVector2(CEGUI::UDim(0.15f, 0), CEGUI::UDim(0.33f, 0)));
     splay->setVisible(true);
 
     splay_texture_up = &CEGUI::System::getSingleton().getRenderer()->createTexture("splayt_up", "splay-up.png", "");
@@ -345,23 +348,41 @@ void BattingSimulator::createScene(void)
     splay->setProperty("HoverImage", "splayi_hover");
     splay->setProperty("PushedImage", "splayi_down");
 
-    CEGUI::Window *mPlay = wmgr.createWindow("TaharezLook/Button", "CEGUIDemo/MulPlayBtn");
-    mPlay->setText("Multi-Player");
-    mPlay->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.07, 0)));
-    mPlay->setPosition(CEGUI::UVector2(CEGUI::UDim(0.425f, 0), CEGUI::UDim(0.5041f, 0)));
-    mPlay->setVisible(false);
-    sheet->addChild(mPlay);
+    // Create the option for single player
+    CEGUI::Texture* mplay_texture_up; 
+    CEGUI::Texture* mplay_texture_down; 
+    CEGUI::Texture* mplay_texture_hover; 
+
+    CEGUI::BasicImage* mplay_image_up;
+    CEGUI::BasicImage* mplay_image_down;
+    CEGUI::BasicImage* mplay_image_hover;
+
+    CEGUI::Window *mplay = wmgr.createWindow("TaharezLook/ImageButton", "CEGUIDemo/mplay");
+    mplay->setSize(CEGUI::USize(CEGUI::UDim(0.490f, 0), CEGUI::UDim(0.252f, 0))); //<---------------------------------------------- WORKING HERE
+    mplay->setPosition(CEGUI::UVector2(CEGUI::UDim(0.18f, 0), CEGUI::UDim(0.50f, 0)));
+    mplay->setVisible(true);
+
+    mplay_texture_up = &CEGUI::System::getSingleton().getRenderer()->createTexture("mplayt_up", "mplay-up.png", "");
+    mplay_texture_down = &CEGUI::System::getSingleton().getRenderer()->createTexture("mplayt_down", "mplay-down.png", "");
+    mplay_texture_hover = &CEGUI::System::getSingleton().getRenderer()->createTexture("mplayt_hover", "mplay-hover.png", "");
+
+    mplay_image_up = (CEGUI::BasicImage*)( &CEGUI::ImageManager::getSingleton().create("BasicImage","mplayi_up"));
+    mplay_image_down = (CEGUI::BasicImage*)( &CEGUI::ImageManager::getSingleton().create("BasicImage","mplayi_down"));
+    mplay_image_hover = (CEGUI::BasicImage*)( &CEGUI::ImageManager::getSingleton().create("BasicImage","mplayi_hover"));
+
+    mplay_image_up->setArea(CEGUI::Rectf(CEGUI::Vector2f(0.0f, 0.0f), mplay_texture_up->getOriginalDataSize()));
+    mplay_image_up->setTexture(mplay_texture_up);
+    mplay_image_down->setArea(CEGUI::Rectf(CEGUI::Vector2f(0.0f, 0.0f), mplay_texture_down->getOriginalDataSize()));
+    mplay_image_down->setTexture(mplay_texture_down);
+    mplay_image_hover->setArea(CEGUI::Rectf(CEGUI::Vector2f(0.0f, 0.0f), mplay_texture_hover->getOriginalDataSize()));
+    mplay_image_hover->setTexture(mplay_texture_hover);
+
+    sheet->addChild(mplay);
     CEGUI::System::getSingleton().getDefaultGUIContext().setRootWindow(sheet);
 
-    /*
-    CEGUI::Window *pause = wmgr.createWindow("TaharezLook/ImageButton", "CEGUIDemo/pause");
-    pause->setText("          Pause");
-    pause->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.07, 0)));
-    pause->setPosition(CEGUI::UVector2(CEGUI::UDim(0.425f, 0), CEGUI::UDim(0.465f, 0)));
-    pause->setVisible(true);
-    sheet->addChild(pause);
-    CEGUI::System::getSingleton().getDefaultGUIContext().setRootWindow(sheet);
-    */
+    mplay->setProperty("NormalImage", "mplayi_up");
+    mplay->setProperty("HoverImage", "mplayi_hover");
+    mplay->setProperty("PushedImage", "mplayi_down");
 
     // Create Image for pause menu (We need a separate image for each button state but only 1 here)
     CEGUI::Texture* pause_texture;

@@ -119,6 +119,10 @@ void BaseApplication::createFrameListener(void)
     mWindow->getCustomAttribute("WINDOW", &windowHnd);
     windowHndStr << windowHnd;
     pl.insert(std::make_pair(std::string("WINDOW"), windowHndStr.str()));
+    pl.insert(std::make_pair(std::string("x11_mouse_grab"), std::string("false")));
+    pl.insert(std::make_pair(std::string("x11_mouse_hide"), std::string("false")));
+    pl.insert(std::make_pair(std::string("x11_keyboard_grab"), std::string("false")));
+    pl.insert(std::make_pair(std::string("XAutoRepeatOn"), std::string("true")));
 
     mInputManager = OIS::InputManager::createInputSystem(pl);
 
@@ -590,6 +594,7 @@ bool BaseApplication::keyPressed( const OIS::KeyEvent &arg )
         }
     }
     //mCameraMan->injectKeyDown(arg);
+    
     return true;
 }
 //---------------------------------------------------------------------------
