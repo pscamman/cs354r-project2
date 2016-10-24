@@ -143,6 +143,28 @@ void BattingSimulator::createScene(void)
             bWorld->addRigidBody(blockBody);
             rigidBodies.insert(blockBody);
         }
+    ent = mSceneMgr->createEntity("ogrehead.mesh");
+    ent->setCastShadows(true);
+    node = mSceneMgr->getRootSceneNode()->createChildSceneNode("ogre");
+    node->attachObject(ent);
+    node->setScale(4,4,4);
+    Vector3 pos(0,50,0);
+    node->setPosition(pos);
+    btCollisionShape* blockShape =  new btBoxShape(btVector3(75.0f,75.0f,75.0f));
+    btDefaultMotionState* blockMotionState =
+                new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1),
+                                         btVector3(pos.x,pos.y,pos.z)));
+    btScalar bmass (100.0);
+    btVector3 fallInertia(0, 0, 0);
+    blockShape->calculateLocalInertia(bmass, fallInertia);
+    btRigidBody::btRigidBodyConstructionInfo blockRBCI(bmass, blockMotionState,blockShape,fallInertia);
+    btRigidBody* blockBody = new btRigidBody(blockRBCI);
+    blockBody->setUserPointer(node);
+    blockBody->setRestitution(0.8f);
+    bWorld->addRigidBody(blockBody);
+    rigidBodies.insert(blockBody);
+    AI *ogreAI = new AI(blockBody,"ogre");
+    AIObjects.push_back(ogreAI);
 }
 //---------------------------------------------------------------------------
 

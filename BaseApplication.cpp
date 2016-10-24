@@ -42,7 +42,9 @@ BaseApplication::BaseApplication(void)
     batCharge(false),
     batSwing(false),
     cameraVelocity(Ogre::Vector3::ZERO),
-    yawPerSec(0)
+    yawPerSec(0),
+    gMusic(NULL),
+    hosting(false)
 {
 #if OGRE_PLATFORM == OGRE_PLATFORM_APPLE
     m_ResourcePath = Ogre::macBundlePath() + "/Contents/Resources/";
@@ -75,12 +77,17 @@ bool BaseApplication::configure(void)
     // Show the configuration dialog and initialise the system.
     // You can skip this and use root.restoreConfig() to load configuration
     // settings if you were sure there are valid ones saved in ogre.cfg.
-    if(mRoot->showConfigDialog())
+  /*if(hosting)
     {
-        auto rs = mRoot->getRenderSystem();
+        auto rs = *begin(mRoot->getAvailableRenderers());
+        mRoot->setRenderSystem(rs);
         rs->setConfigOption("Full Screen", "No");
         rs->setConfigOption("Video Mode", "640 x 480");
-
+        mWindow = mRoot->initialise(true, "TutorialApplication Render Window");
+        return true;
+    }
+    else*/ if(mRoot->showConfigDialog())
+    {
         // If returned true, user clicked OK so initialise.
         // Here we choose to let the system create a default rendering window by passing 'true'.
         mWindow = mRoot->initialise(true, "TutorialApplication Render Window");
@@ -185,14 +192,14 @@ void BaseApplication::destroyScene(void)
 }
 //---------------------------------------------------------------------------
 void BaseApplication::createViewports(void)
-{/*
+{
     // Create one viewport, entire window
     Ogre::Viewport* vp = mWindow->addViewport(mCamera);
     vp->setBackgroundColour(Ogre::ColourValue(0,0,0));
 
     // Alter the camera aspect ratio to match the viewport
     mCamera->setAspectRatio(Ogre::Real(vp->getActualWidth()) / Ogre::Real(vp->getActualHeight()));
-*/}
+}
 //---------------------------------------------------------------------------
 void BaseApplication::setupResources(void)
 {
@@ -332,12 +339,14 @@ bool BaseApplication::setup(void)
     while(h.compare("y") and h.compare("n"))
         std::getline(std::cin, h);
 
+    hosting = h.compare("y") == 0;
+
     carryOn = nMan.initNetManager();
     if(!carryOn) return false;
 
-    if(h.compare("y") == 0)
+    if(hosting)
     {
-        nMan.addNetworkInfo(PROTOCOL_ALL, NULL,        51215);
+        nMan.addNetworkInfo(PROTOCOL_ALL, NULL, 51215);
         carryOn = nMan.startServer();
         if(!carryOn) return false;
     }
@@ -435,7 +444,9 @@ bool BaseApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
 
     float scale = (4+charge*3/5)*3;
     batNode->setScale(scale,scale,scale);
-
+    for(int i = 0; i < AIObjects.size(); ++i){
+        AIObjects[i]->patrol();
+    }
     mTrayMgr->frameRenderingQueued(evt);
 
     if (!mTrayMgr->isDialogVisible())
@@ -762,6 +773,7 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
 
     int numManifolds = bApp->bWorld->getDispatcher()->getNumManifolds();
     std::unordered_set<btRigidBody*> toRemove;
+    bool ptisys = false;
     for(int i=0;i<numManifolds;++i)
     {
         btPersistentManifold* contactManifold =  bApp->bWorld->getDispatcher()->getManifoldByIndexInternal(i);
@@ -777,6 +789,9 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
         bool pointA;
         bool pointB;
         bool batA, batB;
+        bool ogreA, ogreB;
+        ogreA = !static_cast<Ogre::SceneNode*>(obA->getUserPointer())->getName().substr(0,4).compare("ogre");
+        ogreB = !static_cast<Ogre::SceneNode*>(obB->getUserPointer())->getName().substr(0,4).compare("ogre");
         sphereA = !static_cast<Ogre::SceneNode*>(obA->getUserPointer())->getName().substr(0,6).compare("sphere");
         sphereB = !static_cast<Ogre::SceneNode*>(obB->getUserPointer())->getName().substr(0,6).compare("sphere");
         blockA  = !static_cast<Ogre::SceneNode*>(obA->getUserPointer())->getName().substr(0,5).compare("block");
@@ -795,6 +810,7 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
                 btManifoldPoint& pt = contactManifold->getContactPoint(j);
                 if (pt.getAppliedImpulse()>0.f)
                 {
+
                     bApp->playSound(1);
                     break;
                 }
@@ -808,6 +824,7 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
                 btManifoldPoint& pt = contactManifold->getContactPoint(j);
                 if (pt.getAppliedImpulse()>0.f)
                 {
+                    // bApp->AIObjects[0]->vulnerable();
                     toRemove.insert(static_cast<btRigidBody*>(pointA ? obA : obB));
                     bApp->playSound(3);
                     break;
@@ -817,10 +834,32 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
         if(batA and sphereB or batB and sphereA)
         {
             int numContacts = contactManifold->getNumContacts();
-            if(numContacts)
+            if(numContacts){
+                // ptisys = true;
+                // Ogre::ParticleSystem* gn = bApp->mSceneMgr->createParticleSystem("pts", "Examples/PurpleFountain");
+                // static_cast<Ogre::SceneNode*>(obA->getUserPointer())->createChildSceneNode("Particle")->attachObject(gn);
                 bApp->playSound(2);
+            }
+            break;
+        }
+        if(ogreA and sphereB or ogreB and sphereA)
+        {
+            int numContacts = contactManifold->getNumContacts();
+            if (numContacts)
+            {
+                for(int i = 0; i < bApp->AIObjects.size(); ++i){
+                    if(bApp->AIObjects[i]->name == "ogre" ){
+                        delete bApp->AIObjects[i];
+                        bApp->AIObjects.erase(bApp->AIObjects.begin()+i);
+                    }
+                }
+                toRemove.insert(static_cast<btRigidBody*>(ogreA ? obA : obB));
+                bApp->playSound(3);
+            }
         }
     }
+    // if(ptisys)
+    //     bApp->mSceneMgr->destroyParticleSystem("pts");
     for(auto rb : toRemove)
     {
         auto sn = static_cast<Ogre::SceneNode*>(rb->getUserPointer());
@@ -832,5 +871,6 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
         delete rb->getCollisionShape();
         delete rb;
     }
+
 }
 //---------------------------------------------------------------------------
