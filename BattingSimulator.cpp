@@ -152,7 +152,7 @@ void BattingSimulator::createScene(void)
     node->setPosition(pos);
     btCollisionShape* blockShape =  new btBoxShape(btVector3(50.0f,50.0f,50.0f));
     btDefaultMotionState* blockMotionState =
-                new btDefaultMotionState(btTransform(btQuaternion(0, 0, 1, 1),
+                new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1),
                                          btVector3(pos.x,pos.y,pos.z)));
     btScalar bmass (100.0);
     btVector3 fallInertia(0, 0, 0);
@@ -163,7 +163,7 @@ void BattingSimulator::createScene(void)
     blockBody->setRestitution(0.8f);
     bWorld->addRigidBody(blockBody);
     rigidBodies.insert(blockBody);
-    AI *ogreAI = new AI(blockBody);
+    AI *ogreAI = new AI(blockBody,"ogre");
     AIObjects.push_back(ogreAI);
 }
 //---------------------------------------------------------------------------

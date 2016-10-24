@@ -746,8 +746,8 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
         bool pointB;
         bool batA, batB;
         bool ogreA, ogreB;
-        ogreA = !static_cast<Ogre::SceneNode*>(obA->getUserPointer())->getName().substr(0,6).compare("ogre");
-        ogreB = !static_cast<Ogre::SceneNode*>(obB->getUserPointer())->getName().substr(0,6).compare("ogre");    
+        ogreA = !static_cast<Ogre::SceneNode*>(obA->getUserPointer())->getName().substr(0,4).compare("ogre");
+        ogreB = !static_cast<Ogre::SceneNode*>(obB->getUserPointer())->getName().substr(0,4).compare("ogre");    
         sphereA = !static_cast<Ogre::SceneNode*>(obA->getUserPointer())->getName().substr(0,6).compare("sphere");
         sphereB = !static_cast<Ogre::SceneNode*>(obB->getUserPointer())->getName().substr(0,6).compare("sphere");
         blockA  = !static_cast<Ogre::SceneNode*>(obA->getUserPointer())->getName().substr(0,5).compare("block");
@@ -779,6 +779,7 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
                 btManifoldPoint& pt = contactManifold->getContactPoint(j);
                 if (pt.getAppliedImpulse()>0.f)
                 {
+                    bApp->AIObjects[0]->vulnerable();
                     toRemove.insert(static_cast<btRigidBody*>(pointA ? obA : obB));
                     bApp->playSound(3);
                     break;
@@ -794,19 +795,18 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
         }
         if(ogreA and sphereB or ogreB and sphereA)
         {
-            int numContacts = contactManifold->getNumContacts();
-            for(int j=0;j<numContacts;++j)
+            int numContacts = contactManifold->getNumContacts();       
+            if (numContacts)
             {
-                btManifoldPoint& pt = contactManifold->getContactPoint(j);
-                if (pt.getAppliedImpulse()>0.f)
-                {
-                    delete bApp->AIObjects[0];
-                    toRemove.insert(static_cast<btRigidBody*>(ogreA ? obA : obB));
-                    bApp->playSound(3);
-                    break;
+                for(int i = 0; i < bApp->AIObjects.size(); ++i){
+                    if(bApp->AIObjects[i]->name == "ogre" && bApp->AIObjects[i]->vulnerability){
+                        delete bApp->AIObjects[i];
+                        bApp->AIObjects.erase(bApp->AIObjects.begin()+i);
+                    }
                 }
-            }
-
+                toRemove.insert(static_cast<btRigidBody*>(ogreA ? obA : obB));
+                bApp->playSound(3);
+            }          
         }
     }
     for(auto rb : toRemove)
