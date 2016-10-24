@@ -21,6 +21,7 @@ http://www.ogre3d.org/wiki/
 #include <macUtils.h>
 #endif
 
+int score = 0;
 //---------------------------------------------------------------------------
 BaseApplication::BaseApplication(void)
     : mRoot(0),
@@ -129,10 +130,7 @@ void BaseApplication::createFrameListener(void)
     mWindow->getCustomAttribute("WINDOW", &windowHnd);
     windowHndStr << windowHnd;
     pl.insert(std::make_pair(std::string("WINDOW"), windowHndStr.str()));
-    pl.insert(std::make_pair(std::string("x11_mouse_grab"), std::string("false")));
-    pl.insert(std::make_pair(std::string("x11_mouse_hide"), std::string("false")));
-    pl.insert(std::make_pair(std::string("x11_keyboard_grab"), std::string("false")));
-    pl.insert(std::make_pair(std::string("XAutoRepeatOn"), std::string("true")));
+
 
     mInputManager = OIS::InputManager::createInputSystem(pl);
 
@@ -468,7 +466,7 @@ bool BaseApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
         }
     }
 
-
+    mGUI->updateP1Score(score);
     return true;
 }
 //---------------------------------------------------------------------------
@@ -663,12 +661,27 @@ bool BaseApplication::keyReleased(const OIS::KeyEvent &arg)
 //---------------------------------------------------------------------------
 bool BaseApplication::mouseMoved(const OIS::MouseEvent &arg)
 {
+    /******************************************************************************
+     ** CEGUI Handler for mouse movement, do not delete!                         **
+     ******************************************************************************/
+    CEGUI::System &sys = CEGUI::System::getSingleton();
+    sys.getDefaultGUIContext().injectMouseMove(arg.state.X.rel, arg.state.Y.rel);
+    // Scroll wheel.
+    if (arg.state.Z.rel)
+        sys.getDefaultGUIContext().injectMouseWheelChange(arg.state.Z.rel / 120.0f);
+    // END OF CEGUI HANDLER
     camNode->translate(0,0,arg.state.Z.rel*0.25f);
     return true;
 }
 //---------------------------------------------------------------------------
 bool BaseApplication::mousePressed(const OIS::MouseEvent &arg, OIS::MouseButtonID id)
 {
+    /******************************************************************************
+     ** CEGUI Handler for mouse movement, do not delete!                         **
+     ******************************************************************************/
+    //CEGUI::GUIContext &mPress = CEGUI::System::getSingleton().getDefaultGUIContext();
+    CEGUI::System::getSingleton().getDefaultGUIContext().injectMouseButtonUp(mGUI->convertButton(id));
+    // END OF CEGUI HANDLER
     if(id == OIS::MB_Left)
     {
         batCharge = true;
@@ -683,6 +696,12 @@ bool BaseApplication::mousePressed(const OIS::MouseEvent &arg, OIS::MouseButtonI
 //---------------------------------------------------------------------------
 bool BaseApplication::mouseReleased(const OIS::MouseEvent &arg, OIS::MouseButtonID id)
 {
+    /******************************************************************************
+     ** CEGUI Handler for mouse movement, do not delete!                         **
+     ******************************************************************************/
+    //CEGUI::GUIContext &mRel = CEGUI::System::getSingleton().getDefaultGUIContext();
+    CEGUI::System::getSingleton().getDefaultGUIContext().injectMouseButtonDown(mGUI->convertButton(id));
+    // END OF CEGUI HANDLER
     if(mTrayMgr->injectMouseUp(arg, id)) return true;
     //mCameraMan->injectMouseUp(arg, id);
 
@@ -831,6 +850,7 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
                 {
                     // bApp->AIObjects[0]->vulnerable();
                     toRemove.insert(static_cast<btRigidBody*>(pointA ? obA : obB));
+                    score += 10;
                     bApp->playSound(3);
                     break;
                 }
@@ -856,6 +876,7 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
                     if(bApp->AIObjects[i]->name == "ogre" ){
                         delete bApp->AIObjects[i];
                         bApp->AIObjects.erase(bApp->AIObjects.begin()+i);
+                        score += 50;
                     }
                 }
                 toRemove.insert(static_cast<btRigidBody*>(ogreA ? obA : obB));
