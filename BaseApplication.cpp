@@ -77,10 +77,13 @@ bool BaseApplication::configure(void)
     // settings if you were sure there are valid ones saved in ogre.cfg.
     if(mRoot->showConfigDialog())
     {
+        auto rs = mRoot->getRenderSystem();
+        rs->setConfigOption("Full Screen", "No");
+        rs->setConfigOption("Video Mode", "640 x 480");
+
         // If returned true, user clicked OK so initialise.
         // Here we choose to let the system create a default rendering window by passing 'true'.
         mWindow = mRoot->initialise(true, "TutorialApplication Render Window");
-
         return true;
     }
     else
@@ -182,14 +185,14 @@ void BaseApplication::destroyScene(void)
 }
 //---------------------------------------------------------------------------
 void BaseApplication::createViewports(void)
-{
+{/*
     // Create one viewport, entire window
     Ogre::Viewport* vp = mWindow->addViewport(mCamera);
     vp->setBackgroundColour(Ogre::ColourValue(0,0,0));
 
     // Alter the camera aspect ratio to match the viewport
     mCamera->setAspectRatio(Ogre::Real(vp->getActualWidth()) / Ogre::Real(vp->getActualHeight()));
-}
+*/}
 //---------------------------------------------------------------------------
 void BaseApplication::setupResources(void)
 {

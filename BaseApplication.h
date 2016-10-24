@@ -50,7 +50,6 @@ http://www.ogre3d.org/wiki/
 // SDL
 #include "SDL/SDL.h"
 #include "SDL/SDL_mixer.h"
-//#include "SDL/SDL_net.h"
 #include "NetManager.h"
 
 // ---------------------------------------
