@@ -401,8 +401,8 @@ bool BaseApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
 
     float scale = (4+charge*3/5)*3;
     batNode->setScale(scale,scale,scale);
-    for(int i = 0; i < AIObjects.size(); ++i){
-        AIObjects[i]->patrol();
+    for(int i = 0; i < gameObjects.size(); ++i){
+            gameObjects[i]->updateAI();
     }
     mTrayMgr->frameRenderingQueued(evt);
 
@@ -776,17 +776,13 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
         if(groundA and pointB or groundB and pointA)
         {
             int numContacts = contactManifold->getNumContacts();
-            for(int j=0;j<numContacts;++j)
+            if (numContacts)
             {
-                btManifoldPoint& pt = contactManifold->getContactPoint(j);
-                if (pt.getAppliedImpulse()>0.f)
-                {
-                    // bApp->AIObjects[0]->vulnerable();
-                    toRemove.insert(static_cast<btRigidBody*>(pointA ? obA : obB));
-                    bApp->playSound(3);
-                    break;
-                }
+                toRemove.insert(static_cast<btRigidBody*>(pointA ? obA : obB));
+                bApp->playSound(3);
+                break;
             }
+            
         }
         if(batA and sphereB or batB and sphereA)
         {
@@ -804,10 +800,9 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
             int numContacts = contactManifold->getNumContacts();       
             if (numContacts)
             {
-                for(int i = 0; i < bApp->AIObjects.size(); ++i){
-                    if(bApp->AIObjects[i]->name == "ogre" ){
-                        delete bApp->AIObjects[i];
-                        bApp->AIObjects.erase(bApp->AIObjects.begin()+i);
+                for(int i = 0; i < bApp->gameObjects.size(); ++i){
+                    if(bApp->gameObjects[i]->getName() == "ogre" ){
+                        bApp->gameObjects.erase(bApp->gameObjects.begin()+i);
                     }
                 }
                 toRemove.insert(static_cast<btRigidBody*>(ogreA ? obA : obB));

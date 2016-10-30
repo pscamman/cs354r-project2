@@ -49,6 +49,8 @@ http://www.ogre3d.org/wiki/
 // SDL
 #include "SDL/SDL.h"
 #include "SDL/SDL_mixer.h"
+
+#include "GameObject.h"
 #include "AI.h"
 // ---------------------------------------
 
@@ -188,7 +190,7 @@ protected:
     std::vector<Mix_Chunk*>     mix_chunks;  // the chunks of audio
     Mix_Music *gMusic = NULL;
 
-    std::vector<AI*> AIObjects;
+    std::vector<GameObject*> gameObjects;
 
 #ifdef OGRE_STATIC_LIB
     Ogre::StaticPluginLoader m_StaticPluginLoader;

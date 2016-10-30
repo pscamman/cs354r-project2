@@ -36,7 +36,7 @@ void AI::patrol()
 }
 
 void AI::vulnerable(){
-	// auto sn = static_cast<Ogre::SceneNode*>(btBody->getUserPointer());
+	auto sn = static_cast<Ogre::SceneNode*>(btBody->getUserPointer());
 	// auto en = static_cast<Ogre::Entity*>(sn->getAttachedObject(name));
 	// en->setMaterialName("Examples/BumpyMetal");
 	vulnerability = true;

@@ -142,6 +142,8 @@ void BattingSimulator::createScene(void)
             blockBody->setRestitution(0.8f);
             bWorld->addRigidBody(blockBody);
             rigidBodies.insert(blockBody);
+            GameObject* obj = new GameObject(node,blockBody);
+            gameObjects.push_back(obj);
         }
     ent = mSceneMgr->createEntity("ogrehead.mesh");
     ent->setCastShadows(true);
@@ -162,9 +164,10 @@ void BattingSimulator::createScene(void)
     blockBody->setUserPointer(node);
     blockBody->setRestitution(0.8f);
     bWorld->addRigidBody(blockBody);
+    GameObject* obj = new GameObject(node,blockBody);
+    obj->attachAI(new AI(blockBody,"ogre"));
+    gameObjects.push_back(obj);
     rigidBodies.insert(blockBody);
-    AI *ogreAI = new AI(blockBody,"ogre");
-    AIObjects.push_back(ogreAI);
 }
 //---------------------------------------------------------------------------
 
