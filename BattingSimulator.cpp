@@ -150,7 +150,6 @@ void BattingSimulator::createScene(void)
                 obj->setPoint(10);
             gameObjects.push_back(obj);
         }
-<<<<<<< HEAD
     for(int i = -4; i < 5; ++i)
         for(int j = 0; j < 7; ++j)
         {

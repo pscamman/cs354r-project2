@@ -44,12 +44,9 @@ BaseApplication::BaseApplication(void)
     batSwing(false),
     cameraVelocity(Ogre::Vector3::ZERO),
     yawPerSec(0),
-<<<<<<< HEAD
-    particleIndex(0)
-=======
+    particleIndex(0),
     gMusic(NULL),
     hosting(false)
->>>>>>> origin/dev-joe
 {
 #if OGRE_PLATFORM == OGRE_PLATFORM_APPLE
     m_ResourcePath = Ogre::macBundlePath() + "/Contents/Resources/";
@@ -683,25 +680,18 @@ bool BaseApplication::mouseMoved(const OIS::MouseEvent &arg)
 //---------------------------------------------------------------------------
 bool BaseApplication::mousePressed(const OIS::MouseEvent &arg, OIS::MouseButtonID id)
 {
-<<<<<<< HEAD
+    CEGUI::System::getSingleton().getDefaultGUIContext().injectMouseButtonUp(mGUI->convertButton(id));
     if(id == OIS::MB_Left or id == OIS::MB_Right)
-=======
     /******************************************************************************
      ** CEGUI Handler for mouse movement, do not delete!                         **
      ******************************************************************************/
     //CEGUI::GUIContext &mPress = CEGUI::System::getSingleton().getDefaultGUIContext();
-    CEGUI::System::getSingleton().getDefaultGUIContext().injectMouseButtonUp(mGUI->convertButton(id));
     // END OF CEGUI HANDLER
-    if(id == OIS::MB_Left)
->>>>>>> origin/dev-joe
     {
         batCharge = true;
         if(not batSwing)
             playSound(0);
     }
-
-    //if (mTrayMgr->injectMouseDown(arg, id)) return true;
-    //mCameraMan->injectMouseDown(arg, id);
     return true;
 }
 //---------------------------------------------------------------------------
