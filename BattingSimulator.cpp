@@ -150,40 +150,7 @@ void BattingSimulator::createScene(void)
                 obj->setPoint(10);
             gameObjects.push_back(obj);
         }
-    for(int i = -4; i < 5; ++i)
-        for(int j = 0; j < 7; ++j)
-        {
-            bool pointBlock = j!=0 and (2+i+j)%2;
-            ent = mSceneMgr->createEntity(Ogre::SceneManager::PT_CUBE);
-            ent->setMaterialName(pointBlock ? "Examples/10PointBlock" : "Examples/Water3");
-            ent->setCastShadows(true);
-            node = mSceneMgr->getRootSceneNode()->createChildSceneNode((pointBlock ? "point" : "block")
-                                                                       +std::to_string(i)
-                                                                       +" "
-                                                                       +std::to_string(j)
-                                                                       +" "
-                                                                       +std::to_string(++index));
-            node->setPosition(i*100, j*100, -500);
-            node->attachObject(ent);
-
-            btCollisionShape* blockShape =  new btBoxShape(btVector3(50.0f,50.0f,50.0f));
-            btDefaultMotionState* blockMotionState =
-                        new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1),
-                                                 btVector3(i*100, j*100+25, -1000)));
-            btScalar bmass (10.0);
-            btVector3 fallInertia(0, 0, 0);
-            blockShape->calculateLocalInertia(bmass, fallInertia);
-            btRigidBody::btRigidBodyConstructionInfo blockRBCI(bmass, blockMotionState,blockShape,fallInertia);
-            btRigidBody* blockBody = new btRigidBody(blockRBCI);
-            blockBody->setUserPointer(node);
-            blockBody->setRestitution(0.8f);
-            bWorld->addRigidBody(blockBody);
-            rigidBodies.insert(blockBody);
-            GameObject* obj = new GameObject(node,blockBody);
-            if(pointBlock)
-                obj->setPoint(10);
-            gameObjects.push_back(obj);
-        }
+   
     for(int i = 0; i < 2; ++i){
         ent = mSceneMgr->createEntity("ogrehead.mesh");
         ent->setCastShadows(true);
