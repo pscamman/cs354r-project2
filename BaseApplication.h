@@ -52,6 +52,10 @@ http://www.ogre3d.org/wiki/
 
 #include "GameObject.h"
 #include "AI.h"
+// CEGUI
+#include <CEGUI/CEGUI.h>
+#include <CEGUI/RendererModules/Ogre/Renderer.h>
+
 // ---------------------------------------
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_APPLE

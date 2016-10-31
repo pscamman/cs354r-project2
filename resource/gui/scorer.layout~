@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<GUILayout>
+<Window Type="TaharezLook/ImageButton" Name="btnNewGame">
+	<Property Name="UnifiedPosition" Value="{{0,0},{0,0}}" />
+	<Property Name="UnifiedSize" Value="{{0,64},{0,20}}" />
+	<!-- Here we choose what images to take. set:THEButton means they are stored -->
+	<!-- in the imageset named THEButton and image:btnNormal specifies wich image it is. -->
+	<Property Name="NormalImage"     Value="set:THEButton image:btnNormal" />
+	<Property Name="HoverImage"      Value="set:THEButton image:btnHover"  />
+	<Property Name="PushedImage"     Value="set:THEButton image:btnPushed" />
+	<Property Name="DisabledImage"   Value="set:THEButton image:btnDisabl" />
+	<!-- Now the button would be ready, but without caption ... So we add a caption. -->
+</Window>
+</GUILayout>
