@@ -21,6 +21,7 @@ http://www.ogre3d.org/wiki/
 #include <macUtils.h>
 #endif
 
+int score = 0;
 //---------------------------------------------------------------------------
 BaseApplication::BaseApplication(void)
     : mRoot(0),
@@ -43,7 +44,12 @@ BaseApplication::BaseApplication(void)
     batSwing(false),
     cameraVelocity(Ogre::Vector3::ZERO),
     yawPerSec(0),
+<<<<<<< HEAD
     particleIndex(0)
+=======
+    gMusic(NULL),
+    hosting(false)
+>>>>>>> origin/dev-joe
 {
 #if OGRE_PLATFORM == OGRE_PLATFORM_APPLE
     m_ResourcePath = Ogre::macBundlePath() + "/Contents/Resources/";
@@ -76,12 +82,20 @@ bool BaseApplication::configure(void)
     // Show the configuration dialog and initialise the system.
     // You can skip this and use root.restoreConfig() to load configuration
     // settings if you were sure there are valid ones saved in ogre.cfg.
-    if(mRoot->showConfigDialog())
+  /*if(hosting)
+    {
+        auto rs = *begin(mRoot->getAvailableRenderers());
+        mRoot->setRenderSystem(rs);
+        rs->setConfigOption("Full Screen", "No");
+        rs->setConfigOption("Video Mode", "640 x 480");
+        mWindow = mRoot->initialise(true, "TutorialApplication Render Window");
+        return true;
+    }
+    else*/ if(mRoot->showConfigDialog())
     {
         // If returned true, user clicked OK so initialise.
         // Here we choose to let the system create a default rendering window by passing 'true'.
         mWindow = mRoot->initialise(true, "TutorialApplication Render Window");
-
         return true;
     }
     else
@@ -120,6 +134,7 @@ void BaseApplication::createFrameListener(void)
     mWindow->getCustomAttribute("WINDOW", &windowHnd);
     windowHndStr << windowHnd;
     pl.insert(std::make_pair(std::string("WINDOW"), windowHndStr.str()));
+
 
     mInputManager = OIS::InputManager::createInputSystem(pl);
 
@@ -313,11 +328,11 @@ void BaseApplication::go(void)
 #endif
 #endif
 
-    if (!setup())
-        return;
-    mRoot->startRendering();
+    if (setup())
+        mRoot->startRendering();
     // Clean up
     closeSound();
+    nMan.close();
     destroyScene();
 }
 //---------------------------------------------------------------------------
@@ -325,15 +340,48 @@ bool BaseApplication::setup(void)
 {
     bool carryOn;
 
+    std::cout << "Hosting? y/n" << std::endl;
+    std::string h;
+    while(h.compare("y") and h.compare("n"))
+        std::getline(std::cin, h);
+
+    hosting = h.compare("y") == 0;
+
+    carryOn = nMan.initNetManager();
+    if(!carryOn) return false;
+
+    if(hosting)
+    {
+        nMan.addNetworkInfo(PROTOCOL_ALL, NULL, 51215);
+        carryOn = nMan.startServer();
+        if(!carryOn) return false;
+    }
+    else
+    {
+        std::string ip;
+        do
+        {
+            std::cout << "Host IP?" << std::endl;
+            nMan.close();
+            carryOn = nMan.initNetManager();
+            if(!carryOn) return false;
+            std::getline(std::cin, ip);
+            nMan.addNetworkInfo(PROTOCOL_ALL, ip.c_str(), 51215);
+            carryOn = nMan.startClient();
+        }
+        while(!carryOn);
+        std::cout << "Hostname: " << nMan.getHostname() << std::endl;
+    }
+
     carryOn = setupSound();
-    if (!carryOn) return false;
+    if(!carryOn) return false;
 
     mRoot = new Ogre::Root(mPluginsCfg);
 
     setupResources();
 
     carryOn = configure();
-    if (!carryOn) return false;
+    if(!carryOn) return false;
 
     chooseSceneManager();
     createCamera();
@@ -422,7 +470,7 @@ bool BaseApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
         }
     }
 
-
+    mGUI->updateP1Score(score);
     return true;
 }
 //---------------------------------------------------------------------------
@@ -596,6 +644,7 @@ bool BaseApplication::keyPressed( const OIS::KeyEvent &arg )
         }
     }
     //mCameraMan->injectKeyDown(arg);
+    
     return true;
 }
 //---------------------------------------------------------------------------
@@ -619,13 +668,32 @@ bool BaseApplication::keyReleased(const OIS::KeyEvent &arg)
 //---------------------------------------------------------------------------
 bool BaseApplication::mouseMoved(const OIS::MouseEvent &arg)
 {
+    /******************************************************************************
+     ** CEGUI Handler for mouse movement, do not delete!                         **
+     ******************************************************************************/
+    CEGUI::System &sys = CEGUI::System::getSingleton();
+    sys.getDefaultGUIContext().injectMouseMove(arg.state.X.rel, arg.state.Y.rel);
+    // Scroll wheel.
+    if (arg.state.Z.rel)
+        sys.getDefaultGUIContext().injectMouseWheelChange(arg.state.Z.rel / 120.0f);
+    // END OF CEGUI HANDLER
     camNode->translate(0,0,arg.state.Z.rel*0.25f);
     return true;
 }
 //---------------------------------------------------------------------------
 bool BaseApplication::mousePressed(const OIS::MouseEvent &arg, OIS::MouseButtonID id)
 {
+<<<<<<< HEAD
     if(id == OIS::MB_Left or id == OIS::MB_Right)
+=======
+    /******************************************************************************
+     ** CEGUI Handler for mouse movement, do not delete!                         **
+     ******************************************************************************/
+    //CEGUI::GUIContext &mPress = CEGUI::System::getSingleton().getDefaultGUIContext();
+    CEGUI::System::getSingleton().getDefaultGUIContext().injectMouseButtonUp(mGUI->convertButton(id));
+    // END OF CEGUI HANDLER
+    if(id == OIS::MB_Left)
+>>>>>>> origin/dev-joe
     {
         batCharge = true;
         if(not batSwing)
@@ -639,6 +707,12 @@ bool BaseApplication::mousePressed(const OIS::MouseEvent &arg, OIS::MouseButtonI
 //---------------------------------------------------------------------------
 bool BaseApplication::mouseReleased(const OIS::MouseEvent &arg, OIS::MouseButtonID id)
 {
+    /******************************************************************************
+     ** CEGUI Handler for mouse movement, do not delete!                         **
+     ******************************************************************************/
+    //CEGUI::GUIContext &mRel = CEGUI::System::getSingleton().getDefaultGUIContext();
+    CEGUI::System::getSingleton().getDefaultGUIContext().injectMouseButtonDown(mGUI->convertButton(id));
+    // END OF CEGUI HANDLER
     if(mTrayMgr->injectMouseUp(arg, id)) return true;
     //mCameraMan->injectMouseUp(arg, id);
 
@@ -755,7 +829,7 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
         bool batA, batB;
         bool ogreA, ogreB;
         ogreA = !static_cast<Ogre::SceneNode*>(obA->getUserPointer())->getName().substr(0,4).compare("ogre");
-        ogreB = !static_cast<Ogre::SceneNode*>(obB->getUserPointer())->getName().substr(0,4).compare("ogre");    
+        ogreB = !static_cast<Ogre::SceneNode*>(obB->getUserPointer())->getName().substr(0,4).compare("ogre");
         sphereA = !static_cast<Ogre::SceneNode*>(obA->getUserPointer())->getName().substr(0,6).compare("sphere");
         sphereB = !static_cast<Ogre::SceneNode*>(obB->getUserPointer())->getName().substr(0,6).compare("sphere");
         blockA  = !static_cast<Ogre::SceneNode*>(obA->getUserPointer())->getName().substr(0,5).compare("block");
@@ -774,8 +848,7 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
                 for(int i = 0; i < bApp->gameObjects.size(); ++i){
                     auto obj = bApp->gameObjects[i];
                     if(obj->hasAI && obj->ai->vulnerability){
-                        std::cout<<"@@@@@@@ object is "<< obj->getName()<< std::endl;
-                        std::cout<<"!!!!!!! index is "<< bApp->particleIndex<< std::endl;
+
                         Ogre::ParticleSystem* gn = bApp->mSceneMgr->createParticleSystem(
                                     "GM"+ std::to_string(bApp->particleIndex), "Examples/GreenyNimbus");
                         bApp->particleIndex+= 1;
@@ -794,6 +867,7 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
             int numContacts = contactManifold->getNumContacts();
             if (numContacts)
             {
+                score += 10;
                 toRemove.insert(static_cast<btRigidBody*>(pointA ? obA : obB));
                 for(int i = 0; i < bApp->gameObjects.size(); ++i){
                     auto obj = bApp->gameObjects[i];
@@ -801,7 +875,6 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
                         obj->ai->vulnerable(true);
                         obj->removeParticleSystem();
                     }
- 
                 }
                 bApp->playSound(3);
                 break;
@@ -821,7 +894,7 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
         }
         if(ogreA and sphereB or ogreB and sphereA)
         {
-            int numContacts = contactManifold->getNumContacts();       
+            int numContacts = contactManifold->getNumContacts();
             if (numContacts)
             {
                 bool destory = false;
@@ -830,6 +903,7 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
                     if(obj->getName() == static_cast<Ogre::SceneNode*>(obA->getUserPointer())->getName() ){
                         if (obj->ai->vulnerability){
                             destory = true;
+                            score += 50;
                             bApp->gameObjects.erase(bApp->gameObjects.begin()+i);
                         }
                     }
@@ -837,11 +911,11 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
                 if(destory)
                     toRemove.insert(static_cast<btRigidBody*>(ogreA ? obA : obB));
                 bApp->playSound(3);
-            }          
+            }
         }
     }
     // if(ptisys)
-    //     bApp->mSceneMgr->destroyParticleSystem("pts");       
+    //     bApp->mSceneMgr->destroyParticleSystem("pts");
     for(auto rb : toRemove)
     {
         auto sn = static_cast<Ogre::SceneNode*>(rb->getUserPointer());

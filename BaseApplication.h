@@ -55,9 +55,12 @@ http://www.ogre3d.org/wiki/
 // CEGUI
 #include <CEGUI/CEGUI.h>
 #include <CEGUI/RendererModules/Ogre/Renderer.h>
+#include "NetManager.h"
+
+// GUI
+#include "SGUI.h"
 
 // ---------------------------------------
-
 #if OGRE_PLATFORM == OGRE_PLATFORM_APPLE
 #  include <OIS/OISEvents.h>
 #  include <OIS/OISInputManager.h>
@@ -176,6 +179,7 @@ protected:
 
     // Added for Mac compatibility
     Ogre::String                 m_ResourcePath;
+
     // OgreBullet
     btDefaultCollisionConfiguration*        collisionConfiguration;
     btCollisionDispatcher*                  dispatcher;
@@ -192,9 +196,18 @@ protected:
                                        "punch1.wav",
                                        "wow.wav"};
     std::vector<Mix_Chunk*>     mix_chunks;  // the chunks of audio
-    Mix_Music *gMusic = NULL;
+
     int particleIndex;
     std::vector<GameObject*> gameObjects;
+    Mix_Music* gMusic;
+
+    NetManager nMan;
+    bool hosting;
+
+
+
+    //GUI
+    SGUI* mGUI;
 
 #ifdef OGRE_STATIC_LIB
     Ogre::StaticPluginLoader m_StaticPluginLoader;
