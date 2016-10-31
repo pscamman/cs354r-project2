@@ -11,6 +11,7 @@ protected:
 	Ogre::SceneNode *sn;
 	std::string name;
 	btRigidBody* rb;
+	Ogre::ParticleSystem * ptr;
 	// Ogre::Vector3 pos;
 	int point;
 public:
@@ -24,6 +25,8 @@ public:
 	void setPoint(int);
 	Ogre::Vector3 getPosition(void);
 	void updateAI(void);
+	void attachParticleSystem(Ogre::ParticleSystem*);
+	void removeParticleSystem(void);
 };
 
 #endif

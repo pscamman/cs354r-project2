@@ -40,3 +40,14 @@ void GameObject::updateAI(){
   if(hasAI)
     ai->patrol();
 }
+
+void GameObject::attachParticleSystem(Ogre::ParticleSystem* ps){
+  ptr = ps;
+  sn->createChildSceneNode()->attachObject(ptr);
+}
+
+void GameObject::removeParticleSystem(void){
+  sn->removeAndDestroyAllChildren();
+  ptr = NULL;
+
+}

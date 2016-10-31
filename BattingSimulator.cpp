@@ -113,7 +113,7 @@ void BattingSimulator::createScene(void)
     //add the body to the dynamics world
     bWorld->addRigidBody(groundBody);
     environment.insert(groundBody);
-
+    int index = 0;
     // create target blocks
     for(int i = -4; i < 5; ++i)
         for(int j = 0; j < 7; ++j)
@@ -125,7 +125,9 @@ void BattingSimulator::createScene(void)
             node = mSceneMgr->getRootSceneNode()->createChildSceneNode((pointBlock ? "point" : "block")
                                                                        +std::to_string(i)
                                                                        +" "
-                                                                       +std::to_string(j));
+                                                                       +std::to_string(j)
+                                                                       +" "
+                                                                       +std::to_string(++index));
             node->setPosition(i*100, j*100, -500);
             node->attachObject(ent);
 
@@ -143,31 +145,73 @@ void BattingSimulator::createScene(void)
             bWorld->addRigidBody(blockBody);
             rigidBodies.insert(blockBody);
             GameObject* obj = new GameObject(node,blockBody);
+            if(pointBlock)
+                obj->setPoint(10);
             gameObjects.push_back(obj);
         }
-    ent = mSceneMgr->createEntity("ogrehead.mesh");
-    ent->setCastShadows(true);
-    node = mSceneMgr->getRootSceneNode()->createChildSceneNode("ogre");
-    node->attachObject(ent);
-    node->setScale(4,4,4);
-    Vector3 pos(0,50,0);
-    node->setPosition(pos);
-    btCollisionShape* blockShape =  new btBoxShape(btVector3(75.0f,75.0f,75.0f));
-    btDefaultMotionState* blockMotionState =
-                new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1),
-                                         btVector3(pos.x,pos.y,pos.z)));
-    btScalar bmass (100.0);
-    btVector3 fallInertia(0, 0, 0);
-    blockShape->calculateLocalInertia(bmass, fallInertia);
-    btRigidBody::btRigidBodyConstructionInfo blockRBCI(bmass, blockMotionState,blockShape,fallInertia);
-    btRigidBody* blockBody = new btRigidBody(blockRBCI);
-    blockBody->setUserPointer(node);
-    blockBody->setRestitution(0.8f);
-    bWorld->addRigidBody(blockBody);
-    GameObject* obj = new GameObject(node,blockBody);
-    obj->attachAI(new AI(blockBody,"ogre"));
-    gameObjects.push_back(obj);
-    rigidBodies.insert(blockBody);
+    for(int i = -4; i < 5; ++i)
+        for(int j = 0; j < 7; ++j)
+        {
+            bool pointBlock = j!=0 and (2+i+j)%2;
+            ent = mSceneMgr->createEntity(Ogre::SceneManager::PT_CUBE);
+            ent->setMaterialName(pointBlock ? "Examples/10PointBlock" : "Examples/Water3");
+            ent->setCastShadows(true);
+            node = mSceneMgr->getRootSceneNode()->createChildSceneNode((pointBlock ? "point" : "block")
+                                                                       +std::to_string(i)
+                                                                       +" "
+                                                                       +std::to_string(j)
+                                                                       +" "
+                                                                       +std::to_string(++index));
+            node->setPosition(i*100, j*100, -500);
+            node->attachObject(ent);
+
+            btCollisionShape* blockShape =  new btBoxShape(btVector3(50.0f,50.0f,50.0f));
+            btDefaultMotionState* blockMotionState =
+                        new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1),
+                                                 btVector3(i*100, j*100+25, -1000)));
+            btScalar bmass (10.0);
+            btVector3 fallInertia(0, 0, 0);
+            blockShape->calculateLocalInertia(bmass, fallInertia);
+            btRigidBody::btRigidBodyConstructionInfo blockRBCI(bmass, blockMotionState,blockShape,fallInertia);
+            btRigidBody* blockBody = new btRigidBody(blockRBCI);
+            blockBody->setUserPointer(node);
+            blockBody->setRestitution(0.8f);
+            bWorld->addRigidBody(blockBody);
+            rigidBodies.insert(blockBody);
+            GameObject* obj = new GameObject(node,blockBody);
+            if(pointBlock)
+                obj->setPoint(10);
+            gameObjects.push_back(obj);
+        }
+    for(int i = 0; i < 2; ++i){
+        ent = mSceneMgr->createEntity("ogrehead.mesh");
+        ent->setCastShadows(true);
+        node = mSceneMgr->getRootSceneNode()->createChildSceneNode("ogre"+std::to_string(i));
+        node->attachObject(ent);
+        node->setScale(4,4,4);
+        Vector3 pos(1000*i-500,50,i*1000-1000);
+        node->setPosition(pos);
+        btCollisionShape* blockShape =  new btBoxShape(btVector3(75.0f,75.0f,75.0f));
+        btDefaultMotionState* blockMotionState =
+                    new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1),
+                                             btVector3(pos.x,pos.y,pos.z)));
+        btScalar bmass (100.0);
+        btVector3 fallInertia(0, 0, 0);
+        blockShape->calculateLocalInertia(bmass, fallInertia);
+        btRigidBody::btRigidBodyConstructionInfo blockRBCI(bmass, blockMotionState,blockShape,fallInertia);
+        btRigidBody* blockBody = new btRigidBody(blockRBCI);
+        blockBody->setUserPointer(node);
+        blockBody->setRestitution(0.8f);
+        bWorld->addRigidBody(blockBody);
+        GameObject* obj = new GameObject(node,blockBody);
+        obj->setPoint(100);
+        obj->attachAI(new AI(blockBody));
+        gameObjects.push_back(obj);
+        rigidBodies.insert(blockBody);
+    }
+    
+    
+    
 }
 //---------------------------------------------------------------------------
 

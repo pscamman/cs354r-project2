@@ -42,7 +42,8 @@ BaseApplication::BaseApplication(void)
     batCharge(false),
     batSwing(false),
     cameraVelocity(Ogre::Vector3::ZERO),
-    yawPerSec(0)
+    yawPerSec(0),
+    particleIndex(0)
 {
 #if OGRE_PLATFORM == OGRE_PLATFORM_APPLE
     m_ResourcePath = Ogre::macBundlePath() + "/Contents/Resources/";
@@ -541,7 +542,7 @@ bool BaseApplication::keyPressed( const OIS::KeyEvent &arg )
         sphereNode = mSceneMgr->getRootSceneNode()->createChildSceneNode("sphere"+std::to_string(++i));
         sphereNode->setPosition(pos);
         sphereNode->setScale(.5, .5, .5);
-        Ogre::ParticleSystem* gn = mSceneMgr->createParticleSystem("GN"+std::to_string(++i), "Examples/GreenyNimbus");
+        Ogre::ParticleSystem* gn = mSceneMgr->createParticleSystem("GN"+std::to_string(++i), "Examples/JetEngine1");
         Ogre::SceneNode* particleNode = sphereNode->createChildSceneNode("Particle"+std::to_string(++i));
         particleNode->attachObject(gn);
 
@@ -559,6 +560,9 @@ bool BaseApplication::keyPressed( const OIS::KeyEvent &arg )
         ballBody->setUserPointer(sphereNode);
         ballBody->setRestitution(0.8f);
         bWorld->addRigidBody(ballBody);
+
+        GameObject* ballObj = new GameObject(sphereNode, ballBody);
+
         rigidBodies.insert(ballBody);
         balls.push(ballBody);
         if(balls.size() > 3)
@@ -621,7 +625,7 @@ bool BaseApplication::mouseMoved(const OIS::MouseEvent &arg)
 //---------------------------------------------------------------------------
 bool BaseApplication::mousePressed(const OIS::MouseEvent &arg, OIS::MouseButtonID id)
 {
-    if(id == OIS::MB_Left)
+    if(id == OIS::MB_Left or id == OIS::MB_Right)
     {
         batCharge = true;
         if(not batSwing)
@@ -638,7 +642,7 @@ bool BaseApplication::mouseReleased(const OIS::MouseEvent &arg, OIS::MouseButton
     if(mTrayMgr->injectMouseUp(arg, id)) return true;
     //mCameraMan->injectMouseUp(arg, id);
 
-    if(batCharge and id == OIS::MB_Left)
+    if(batCharge)
     {
         batCharge = false;
         if(not batSwing)
@@ -656,7 +660,10 @@ bool BaseApplication::mouseReleased(const OIS::MouseEvent &arg, OIS::MouseButton
             batBody = new btRigidBody(batRBCI);
             batBody->setUserPointer(batNode);
             batBody->setRestitution(0.8f);
-            batBody->setAngularVelocity(btVector3(0, 4+charge*3/5*M_PI, 0));
+            if(id == OIS::MB_Left)
+                batBody->setAngularVelocity(btVector3(0, 4+charge*3/5*M_PI, 0));
+            else if(id == OIS::MB_Right)
+                batBody->setAngularVelocity(btVector3(0, -(4+charge*3/5*M_PI), 0));
             bWorld->addRigidBody(batBody);
 
             batHinge = new btHingeConstraint(*batBody,
@@ -762,15 +769,24 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
         if(sphereA and (blockB or pointB) or sphereB and (blockA or pointA))
         {
             int numContacts = contactManifold->getNumContacts();
-            for(int j=0;j<numContacts;++j)
+            if (numContacts)
             {
-                btManifoldPoint& pt = contactManifold->getContactPoint(j);
-                if (pt.getAppliedImpulse()>0.f)
-                {
-                   
-                    bApp->playSound(1);
-                    break;
+                for(int i = 0; i < bApp->gameObjects.size(); ++i){
+                    auto obj = bApp->gameObjects[i];
+                    if(obj->hasAI && obj->ai->vulnerability){
+                        std::cout<<"@@@@@@@ object is "<< obj->getName()<< std::endl;
+                        std::cout<<"!!!!!!! index is "<< bApp->particleIndex<< std::endl;
+                        Ogre::ParticleSystem* gn = bApp->mSceneMgr->createParticleSystem(
+                                    "GM"+ std::to_string(bApp->particleIndex), "Examples/GreenyNimbus");
+                        bApp->particleIndex+= 1;
+                        obj->ai->vulnerable(false);
+                        obj->attachParticleSystem(gn);
+                        break;
+                    }
+ 
                 }
+                bApp->playSound(1);
+                break;
             }
         }
         if(groundA and pointB or groundB and pointA)
@@ -779,6 +795,14 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
             if (numContacts)
             {
                 toRemove.insert(static_cast<btRigidBody*>(pointA ? obA : obB));
+                for(int i = 0; i < bApp->gameObjects.size(); ++i){
+                    auto obj = bApp->gameObjects[i];
+                    if(obj->hasAI && !obj->ai->vulnerability){
+                        obj->ai->vulnerable(true);
+                        obj->removeParticleSystem();
+                    }
+ 
+                }
                 bApp->playSound(3);
                 break;
             }
@@ -800,12 +824,18 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
             int numContacts = contactManifold->getNumContacts();       
             if (numContacts)
             {
+                bool destory = false;
                 for(int i = 0; i < bApp->gameObjects.size(); ++i){
-                    if(bApp->gameObjects[i]->getName() == "ogre" ){
-                        bApp->gameObjects.erase(bApp->gameObjects.begin()+i);
+                    auto obj = bApp->gameObjects[i];
+                    if(obj->getName() == static_cast<Ogre::SceneNode*>(obA->getUserPointer())->getName() ){
+                        if (obj->ai->vulnerability){
+                            destory = true;
+                            bApp->gameObjects.erase(bApp->gameObjects.begin()+i);
+                        }
                     }
                 }
-                toRemove.insert(static_cast<btRigidBody*>(ogreA ? obA : obB));
+                if(destory)
+                    toRemove.insert(static_cast<btRigidBody*>(ogreA ? obA : obB));
                 bApp->playSound(3);
             }          
         }

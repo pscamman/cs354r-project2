@@ -189,7 +189,7 @@ protected:
                                        "wow.wav"};
     std::vector<Mix_Chunk*>     mix_chunks;  // the chunks of audio
     Mix_Music *gMusic = NULL;
-
+    int particleIndex;
     std::vector<GameObject*> gameObjects;
 
 #ifdef OGRE_STATIC_LIB
