@@ -1,0 +1,27 @@
+================================================================================
+ SGUI SETUP II
+================================================================================
+1. Get mouse cursor to show
+--------------------------------------------------------------------------------
+
+// Add this to the mouseMoved function in BaseApplication.h
+    /******************************************************************************
+     ** CEGUI Handler for mouse movement, do not delete!                         **
+     ******************************************************************************/
+    CEGUI::System &sys = CEGUI::System::getSingleton();
+    sys.getDefaultGUIContext().injectMouseMove(arg.state.X.rel, arg.state.Y.rel);
+
+
+// Add this to the mousePressed function in BaseApplication.h
+    /******************************************************************************
+     ** CEGUI Handler for mouse movement, do not delete!                         **
+     ******************************************************************************/
+    CEGUI::System::getSingleton().getDefaultGUIContext().injectMouseButtonDown(mGUI->convertButton(id));
+    // END OF CEGUI HANDLER
+
+// Add this to the mouseReleased function in BaseApplication.h
+    /******************************************************************************
+     ** CEGUI Handler for mouse movement, do not delete!                         **
+     ******************************************************************************/
+    CEGUI::System::getSingleton().getDefaultGUIContext().injectMouseButtonUp(mGUI->convertButton(id));
+    // END OF CEGUI HANDLER

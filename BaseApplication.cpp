@@ -413,37 +413,38 @@ bool BaseApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
     mKeyboard->capture();
     mMouse->capture();
 
-    bWorld->stepSimulation(BT_TIMESTEP, 10);
-    btTransform trans;
-    for(auto rb : rigidBodies)
-    {
-        rb->getMotionState()->getWorldTransform(trans);
-        Ogre::SceneNode *sn = static_cast<Ogre::SceneNode *> (rb->getUserPointer());
-        auto origin = trans.getOrigin();
-        sn->setPosition(origin.getX(),
-                        origin.getY(),
-                        origin.getZ());
-        auto orient = rb->getOrientation();
-        sn->setOrientation(orient.getW(),
-                           orient.getX(),
-                           orient.getY(),
-                           orient.getZ());
-    }
-    if(batBody)
-    {
-        auto orient  = batBody->getOrientation();
-        batSpinNode->setOrientation(orient.getW(),
-                                    orient.getX(),
-                                    orient.getY(),
-                                    orient.getZ());
-    }
-    if(!batSwing)
-    {
-        camSpinNode->yaw(Ogre::Radian(yawPerSec * evt.timeSinceLastFrame));
-        Ogre::Vector3 currentMainPos = mainNode->getPosition();
-        currentMainPos += cameraVelocity * evt.timeSinceLastFrame;
-        mainNode->setPosition(currentMainPos);
-    }
+    if(mGUI->isStarted && !mGUI->isPaused) {
+        bWorld->stepSimulation(BT_TIMESTEP, 10);
+        btTransform trans;
+        for(auto rb : rigidBodies)
+        {
+            rb->getMotionState()->getWorldTransform(trans);
+            Ogre::SceneNode *sn = static_cast<Ogre::SceneNode *> (rb->getUserPointer());
+            auto origin = trans.getOrigin();
+            sn->setPosition(origin.getX(),
+                            origin.getY(),
+                            origin.getZ());
+            auto orient = rb->getOrientation();
+            sn->setOrientation(orient.getW(),
+                               orient.getX(),
+                               orient.getY(),
+                               orient.getZ());
+        }
+        if(batBody)
+        {
+            auto orient  = batBody->getOrientation();
+            batSpinNode->setOrientation(orient.getW(),
+                                        orient.getX(),
+                                        orient.getY(),
+                                        orient.getZ());
+        }
+        if(!batSwing)
+        {
+            camSpinNode->yaw(Ogre::Radian(yawPerSec * evt.timeSinceLastFrame));
+            Ogre::Vector3 currentMainPos = mainNode->getPosition();
+            currentMainPos += cameraVelocity * evt.timeSinceLastFrame;
+            mainNode->setPosition(currentMainPos);
+        }
 
     float scale = (4+charge*3/5)*3;
     batNode->setScale(scale,scale,scale);
@@ -452,32 +453,71 @@ bool BaseApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
     }
     mTrayMgr->frameRenderingQueued(evt);
 
-    if (!mTrayMgr->isDialogVisible())
-    {
-        //mCameraMan->frameRenderingQueued(evt);   // If dialog isn't up, then update the camera
-        if (mDetailsPanel->isVisible())          // If details panel is visible, then update its contents
+
+        if (!mTrayMgr->isDialogVisible())
         {
-            mDetailsPanel->setParamValue(0, Ogre::StringConverter::toString(mCamera->getDerivedPosition().x));
-            mDetailsPanel->setParamValue(1, Ogre::StringConverter::toString(mCamera->getDerivedPosition().y));
-            mDetailsPanel->setParamValue(2, Ogre::StringConverter::toString(mCamera->getDerivedPosition().z));
-            mDetailsPanel->setParamValue(4, Ogre::StringConverter::toString(mCamera->getDerivedOrientation().w));
-            mDetailsPanel->setParamValue(5, Ogre::StringConverter::toString(mCamera->getDerivedOrientation().x));
-            mDetailsPanel->setParamValue(6, Ogre::StringConverter::toString(mCamera->getDerivedOrientation().y));
-            mDetailsPanel->setParamValue(7, Ogre::StringConverter::toString(mCamera->getDerivedOrientation().z));
+            //mCameraMan->frameRenderingQueued(evt);   // If dialog isn't up, then update the camera
+            if (mDetailsPanel->isVisible())          // If details panel is visible, then update its contents
+            {
+                mDetailsPanel->setParamValue(0, Ogre::StringConverter::toString(mCamera->getDerivedPosition().x));
+                mDetailsPanel->setParamValue(1, Ogre::StringConverter::toString(mCamera->getDerivedPosition().y));
+                mDetailsPanel->setParamValue(2, Ogre::StringConverter::toString(mCamera->getDerivedPosition().z));
+                mDetailsPanel->setParamValue(4, Ogre::StringConverter::toString(mCamera->getDerivedOrientation().w));
+                mDetailsPanel->setParamValue(5, Ogre::StringConverter::toString(mCamera->getDerivedOrientation().x));
+                mDetailsPanel->setParamValue(6, Ogre::StringConverter::toString(mCamera->getDerivedOrientation().y));
+                mDetailsPanel->setParamValue(7, Ogre::StringConverter::toString(mCamera->getDerivedOrientation().z));
+            }
+        }
+
+        mGUI->updateP1Score(score);
+        mGUI->updateTimer();
+        if(mGUI->timebox_time == 0) {
+           mGUI->setGOverScreenVisible(true);
+           mGUI->isGameOver = true;
+           mGUI->isStarted = false;
         }
     }
-
-    mGUI->updateP1Score(score);
     return true;
 }
 //---------------------------------------------------------------------------
 bool BaseApplication::keyPressed( const OIS::KeyEvent &arg )
 {
+    /******************************************************************************
+     ** CEGUI Handler for key events, do not delete!                             **
+     ******************************************************************************/
+    CEGUI::GUIContext& context = CEGUI::System::getSingleton().getDefaultGUIContext();
+    context.injectKeyDown((CEGUI::Key::Scan)arg.key);
+    context.injectChar((CEGUI::Key::Scan)arg.text);
+    // END CEGUI Handler
+
     if (mTrayMgr->isDialogVisible()) return true;   // don't process any more keys if dialog is up
 
     if (arg.key == OIS::KC_F)   // toggle visibility of advanced frame stats
     {
         mTrayMgr->toggleAdvancedFrameStats();
+    }
+    else if (arg.key == OIS::KC_SPACE) {
+        if(mGUI->isStarted) {
+            if(!mGUI->isPaused) {
+                mGUI->setPauseVisible((mGUI->isPaused = true));
+            } else {
+                mGUI->setPauseVisible((mGUI->isPaused = false));
+            }
+        }
+        if(!mGUI->isStarted && mGUI->multiStarted) {
+            mGUI->isStarted = true;
+            mGUI->playerMessageVisible(false);
+        }
+        if(mGUI->isGameOver) {
+            mGUI->isGameOver = false;
+            mGUI->setGOverScreenVisible(false);
+            mGUI->setTimerVisible(false);
+            mGUI->setP1ScoreVisible(false);
+            mGUI->setP2ScoreVisible(false);
+            mGUI->setP3ScoreVisible(false);
+            mGUI->setP4ScoreVisible(false);
+            mGUI->setTitleScreenVisible(true);
+        }
     }
     else if (arg.key == OIS::KC_G)   // toggle visibility of even rarer debugging details
     {
@@ -647,6 +687,12 @@ bool BaseApplication::keyPressed( const OIS::KeyEvent &arg )
 //---------------------------------------------------------------------------
 bool BaseApplication::keyReleased(const OIS::KeyEvent &arg)
 {
+    /******************************************************************************
+     ** CEGUI Handler for key events, do not delete!                             **
+     ******************************************************************************/
+    CEGUI::System::getSingleton().getDefaultGUIContext().injectKeyUp((CEGUI::Key::Scan)arg.key);
+    // END CEGUI KEY HANDLER
+
     if (arg.key == OIS::KC_W)
         cameraVelocity.y = 0;
     else if (arg.key == OIS::KC_S)
@@ -681,12 +727,11 @@ bool BaseApplication::mouseMoved(const OIS::MouseEvent &arg)
 bool BaseApplication::mousePressed(const OIS::MouseEvent &arg, OIS::MouseButtonID id)
 {
     CEGUI::System::getSingleton().getDefaultGUIContext().injectMouseButtonUp(mGUI->convertButton(id));
-    if(id == OIS::MB_Left or id == OIS::MB_Right)
+    if(i(d == OIS::MB_Left or id == OIS::MB_Right)&& mGUI->isStarted && !mGUI->isPaused)
     /******************************************************************************
      ** CEGUI Handler for mouse movement, do not delete!                         **
      ******************************************************************************/
     //CEGUI::GUIContext &mPress = CEGUI::System::getSingleton().getDefaultGUIContext();
-    // END OF CEGUI HANDLER
     {
         batCharge = true;
         if(not batSwing)
@@ -701,12 +746,11 @@ bool BaseApplication::mouseReleased(const OIS::MouseEvent &arg, OIS::MouseButton
      ** CEGUI Handler for mouse movement, do not delete!                         **
      ******************************************************************************/
     //CEGUI::GUIContext &mRel = CEGUI::System::getSingleton().getDefaultGUIContext();
-    CEGUI::System::getSingleton().getDefaultGUIContext().injectMouseButtonDown(mGUI->convertButton(id));
+    CEGUI::System::getSingleton().getDefaultGUIContext().injectMouseButtonUp(mGUI->convertButton(id));
     // END OF CEGUI HANDLER
     if(mTrayMgr->injectMouseUp(arg, id)) return true;
     //mCameraMan->injectMouseUp(arg, id);
-
-    if(batCharge)
+    if(batCharge and mGUI->isStarted and !mGUI->isPaused)
     {
         batCharge = false;
         if(not batSwing)
@@ -770,6 +814,7 @@ void BaseApplication::windowClosed(Ogre::RenderWindow* rw)
 //callback to have handle on bullet time
 void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
 {
+    bApp->mGUI->tMod += timeStep;
     if(bApp->batCharge)
     {
         bApp->charge += timeStep;
