@@ -350,6 +350,7 @@ bool BaseApplication::setup(void)
     {
         nMan.addNetworkInfo(PROTOCOL_ALL, NULL, 51215);
         carryOn = nMan.startServer();
+        nMan.multiPlayerInit();
         if(!carryOn) return false;
     }
     else
@@ -402,6 +403,13 @@ bool BaseApplication::setup(void)
 //---------------------------------------------------------------------------
 bool BaseApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
 {
+    while(nMan.scanForActivity())
+    {
+        std::cout << "activity" << std::endl;
+        if(!hosting)
+            mShutDown = true;
+    }
+
     if(mWindow->isClosed())
         return false;
 
@@ -573,6 +581,8 @@ bool BaseApplication::keyPressed( const OIS::KeyEvent &arg )
         yawPerSec = -M_PI/4;
     else if (arg.key == OIS::KC_R)
     {
+        if(hosting)
+            nMan.messageClients(PROTOCOL_ALL, "test", 4);
         static int i = -1;
         Ogre::Entity*    ent;
         Ogre::SceneNode* sphereNode;
@@ -637,7 +647,7 @@ bool BaseApplication::keyPressed( const OIS::KeyEvent &arg )
         }
     }
     //mCameraMan->injectKeyDown(arg);
-    
+
     return true;
 }
 //---------------------------------------------------------------------------
