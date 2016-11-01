@@ -726,12 +726,13 @@ bool BaseApplication::mouseMoved(const OIS::MouseEvent &arg)
 //---------------------------------------------------------------------------
 bool BaseApplication::mousePressed(const OIS::MouseEvent &arg, OIS::MouseButtonID id)
 {
-    CEGUI::System::getSingleton().getDefaultGUIContext().injectMouseButtonUp(mGUI->convertButton(id));
-    if(i(d == OIS::MB_Left or id == OIS::MB_Right)&& mGUI->isStarted && !mGUI->isPaused)
     /******************************************************************************
      ** CEGUI Handler for mouse movement, do not delete!                         **
      ******************************************************************************/
     //CEGUI::GUIContext &mPress = CEGUI::System::getSingleton().getDefaultGUIContext();
+    CEGUI::System::getSingleton().getDefaultGUIContext().injectMouseButtonDown(mGUI->convertButton(id));
+    // END OF CEGUI HANDLER
+    if((id == OIS::MB_Left or id == OIS::MB_Right)&& mGUI->isStarted && !mGUI->isPaused)
     {
         batCharge = true;
         if(not batSwing)
