@@ -1,7 +1,7 @@
 #!/bin/bash
 make maintainer-clean
 files=("Makefile.in" "config.h.in" "config.sub" "config.guess" "configure"\
- "compile" "ltmain.sh" "install-sh" "depcomp" "missing" "aclocal.m4")
+ "compile" "ltmain.sh" "install-sh" "depcomp" "missing" "aclocal.m4" "Ogre.log" "CEGUI.log" "ogre.cfg")
 dirs=("m4") 
 for f in ${files[*]}
 do

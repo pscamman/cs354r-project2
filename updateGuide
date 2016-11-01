@@ -1,0 +1,19 @@
+==================================================================================
+Add the following to keyPressed in BaseApplication.cpp
+==================================================================================
+    /******************************************************************************
+     ** CEGUI Handler for key events, do not delete!                             **
+     ******************************************************************************/
+    CEGUI::GUIContext& context = CEGUI::System::getSingleton().getDefaultGUIContext();
+    context.injectKeyDown((CEGUI::Key::Scan)arg.key);
+    context.injectChar((CEGUI::Key::Scan)arg.text);
+    // END CEGUI Handler
+
+=======================================================================================
+ Add the following to keyReleased in BaseApplication.cpp
+ ====================================================================================
+     /******************************************************************************
+     ** CEGUI Handler for key events, do not delete!                             **
+     ******************************************************************************/
+    CEGUI::System::getSingleton().getDefaultGUIContext().injectKeyUp((CEGUI::Key::Scan)arg.key);
+    // END CEGUI KEY HANDLER
