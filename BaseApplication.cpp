@@ -706,7 +706,7 @@ bool BaseApplication::keyReleased(const OIS::KeyEvent &arg)
     else if (arg.key == OIS::KC_E)
         yawPerSec = 0;
     //mCameraMan->injectKeyUp(arg);
-    return true;
+    return true; 
 }
 //---------------------------------------------------------------------------
 bool BaseApplication::mouseMoved(const OIS::MouseEvent &arg)
