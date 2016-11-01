@@ -324,8 +324,22 @@ void BaseApplication::go(void)
 #endif
 #endif
 
+
+    using namespace std::chrono;
     if (setup())
-        mRoot->startRendering();
+        //mRoot->startRendering();
+    {
+        bool b = true;
+        milliseconds ms = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
+        while(b)
+        {
+            b = mRoot->renderOneFrame();
+            milliseconds now = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
+            if(now-ms < milliseconds(10))
+                std::this_thread::sleep_for(milliseconds(10) - (now - ms));
+            ms = now;
+        }
+    }
     // Clean up
     closeSound();
     nMan.close();
@@ -405,9 +419,11 @@ bool BaseApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
 {
     while(nMan.scanForActivity())
     {
-        std::cout << "activity" << std::endl;
         if(!hosting)
-            mShutDown = true;
+        {
+            std::cout << "Message: " << nMan.tcpServerData.output << std::endl;
+            nMan.tcpServerData.updated = false;
+        }
     }
 
     if(mWindow->isClosed())
@@ -420,7 +436,7 @@ bool BaseApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
     mKeyboard->capture();
     mMouse->capture();
 
-    bWorld->stepSimulation(BT_TIMESTEP, 10);
+    bWorld->stepSimulation(evt.timeSinceLastFrame * 2, 10);
     btTransform trans;
     for(auto rb : rigidBodies)
     {
@@ -476,6 +492,40 @@ bool BaseApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
 
     mGUI->updateP1Score(score);
     return true;
+}
+//---------------------------------------------------------------------------
+void BaseApplication::message(std::string msg)
+{
+    static int len = 0;
+    int i = 0;
+    if(msg.size() + len < 128)
+    {
+        len += msg.size();
+        message2(msg);
+        return;
+    }
+
+    i = 128 - len;
+    message2(msg.substr(0, i));
+
+    for(; msg.size() - i >= 128; i += 128)
+        message2(msg.substr(i, 128));
+
+    if(msg.size() > i)
+    {
+        len = msg.size() - i;
+        message2(msg.substr(i, len));
+    }
+    else
+        len = 0;
+}
+//---------------------------------------------------------------------------
+void BaseApplication::message2(std::string msg)
+{
+    if(hosting)
+        nMan.messageClients(PROTOCOL_ALL, msg.c_str(), msg.size());
+    else
+        nMan.messageServer (PROTOCOL_ALL, msg.c_str(), msg.size());
 }
 //---------------------------------------------------------------------------
 bool BaseApplication::keyPressed( const OIS::KeyEvent &arg )
@@ -582,7 +632,11 @@ bool BaseApplication::keyPressed( const OIS::KeyEvent &arg )
     else if (arg.key == OIS::KC_R)
     {
         if(hosting)
-            nMan.messageClients(PROTOCOL_ALL, "test", 4);
+            for(int i = 0; i < 100; ++i)
+            {
+                std::string s = std::string("test" + std::to_string(i));
+                message(s);
+            }
         static int i = -1;
         Ogre::Entity*    ent;
         Ogre::SceneNode* sphereNode;

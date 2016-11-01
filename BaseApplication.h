@@ -41,6 +41,8 @@ http://www.ogre3d.org/wiki/
 #include <string>        /* to_string       */
 #include <stdlib.h>      /* srand, rand     */
 #include <time.h>        /* time            */
+#include <chrono>
+#include <thread>
 #include <queue>         /* queue           */
 #include <unordered_set> /* unordered_set   */
 #include <vector>        /* vector          */
@@ -123,6 +125,9 @@ protected:
     virtual void loadResources(void);
     virtual void createBulletSim(void);
     virtual bool frameRenderingQueued(const Ogre::FrameEvent& evt);
+
+    virtual void message (std::string msg);
+    virtual void message2(std::string msg);
 
     virtual bool keyPressed(const OIS::KeyEvent &arg);
     virtual bool keyReleased(const OIS::KeyEvent &arg);
