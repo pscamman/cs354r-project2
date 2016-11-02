@@ -94,26 +94,29 @@ void BattingSimulator::createScene(void)
     ent->setCastShadows(false);
     mSceneMgr->getRootSceneNode()->createChildSceneNode("ground")->attachObject(ent);
 
-    btCollisionShape* groundShape = new btStaticPlaneShape(btVector3(0, 1, 0), 0);
-    btTransform groundTransform;
-    groundTransform.setIdentity();
-    groundTransform.setOrigin(btVector3(0,0,0));
-    btScalar mass(0.0);
-    // rigidbody is dynamic if and only if mass is non zero, otherwise static
-    // lathe - this plane isnt going to be moving so i dont care about setting the motion state.
-    // using motionstate is recommended, it provides interpolation capabilities,
-    // and only synchronizes 'active' objects.
-    btDefaultMotionState* myMotionState = new btDefaultMotionState(btTransform(btQuaternion(0,0,0,1),
-                                                                   btVector3(0,10,0)));
-    btRigidBody::btRigidBodyConstructionInfo groundRBCI(mass, myMotionState, groundShape,
-                                                               btVector3(0, 0, 0));
-    groundRBCI.m_friction = 1.0f;
-    btRigidBody* groundBody = new btRigidBody(groundRBCI);
-    groundBody->setUserPointer(mSceneMgr->getSceneNode("ground"));
-    groundBody->setRestitution(0.8f);
-    //add the body to the dynamics world
-    bWorld->addRigidBody(groundBody);
-    environment.insert(groundBody);
+    if(hosting)
+    {
+        btCollisionShape* groundShape = new btStaticPlaneShape(btVector3(0, 1, 0), 0);
+        btTransform groundTransform;
+        groundTransform.setIdentity();
+        groundTransform.setOrigin(btVector3(0,0,0));
+        btScalar mass(0.0);
+        // rigidbody is dynamic if and only if mass is non zero, otherwise static
+        // lathe - this plane isnt going to be moving so i dont care about setting the motion state.
+        // using motionstate is recommended, it provides interpolation capabilities,
+        // and only synchronizes 'active' objects.
+        btDefaultMotionState* myMotionState = new btDefaultMotionState(btTransform(btQuaternion(0,0,0,1),
+                                                                       btVector3(0,10,0)));
+        btRigidBody::btRigidBodyConstructionInfo groundRBCI(mass, myMotionState, groundShape,
+                                                                   btVector3(0, 0, 0));
+        groundRBCI.m_friction = 1.0f;
+        btRigidBody* groundBody = new btRigidBody(groundRBCI);
+        groundBody->setUserPointer(mSceneMgr->getSceneNode("ground"));
+        groundBody->setRestitution(0.8f);
+        //add the body to the dynamics world
+        bWorld->addRigidBody(groundBody);
+        environment.insert(groundBody);
+    }
 
     // create target blocks
     for(int i = -4; i < 5; ++i)
@@ -130,19 +133,22 @@ void BattingSimulator::createScene(void)
             node->setPosition(i*100, j*100, -500);
             node->attachObject(ent);
 
-            btCollisionShape* blockShape =  new btBoxShape(btVector3(50.0f,50.0f,50.0f));
-            btDefaultMotionState* blockMotionState =
-                        new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1),
-                                                 btVector3(i*100, j*100+25, -500)));
-            btScalar bmass (10.0);
-            btVector3 fallInertia(0, 0, 0);
-            blockShape->calculateLocalInertia(bmass, fallInertia);
-            btRigidBody::btRigidBodyConstructionInfo blockRBCI(bmass, blockMotionState,blockShape,fallInertia);
-            btRigidBody* blockBody = new btRigidBody(blockRBCI);
-            blockBody->setUserPointer(node);
-            blockBody->setRestitution(0.8f);
-            bWorld->addRigidBody(blockBody);
-            rigidBodies.insert(blockBody);
+            if(hosting)
+            {
+                btCollisionShape* blockShape =  new btBoxShape(btVector3(50.0f,50.0f,50.0f));
+                btDefaultMotionState* blockMotionState =
+                            new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1),
+                                                     btVector3(i*100, j*100+25, -500)));
+                btScalar bmass (10.0);
+                btVector3 fallInertia(0, 0, 0);
+                blockShape->calculateLocalInertia(bmass, fallInertia);
+                btRigidBody::btRigidBodyConstructionInfo blockRBCI(bmass, blockMotionState,blockShape,fallInertia);
+                btRigidBody* blockBody = new btRigidBody(blockRBCI);
+                blockBody->setUserPointer(node);
+                blockBody->setRestitution(0.8f);
+                bWorld->addRigidBody(blockBody);
+                rigidBodies.insert(blockBody);
+            }
         }
 
     ent = mSceneMgr->createEntity("ogrehead.mesh");
@@ -152,21 +158,24 @@ void BattingSimulator::createScene(void)
     node->setScale(4,4,4);
     Vector3 pos(0,50,0);
     node->setPosition(pos);
-    btCollisionShape* blockShape =  new btBoxShape(btVector3(75.0f,75.0f,75.0f));
-    btDefaultMotionState* blockMotionState =
-                new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1),
-                                         btVector3(pos.x,pos.y,pos.z)));
-    btScalar bmass (100.0);
-    btVector3 fallInertia(0, 0, 0);
-    blockShape->calculateLocalInertia(bmass, fallInertia);
-    btRigidBody::btRigidBodyConstructionInfo blockRBCI(bmass, blockMotionState,blockShape,fallInertia);
-    btRigidBody* blockBody = new btRigidBody(blockRBCI);
-    blockBody->setUserPointer(node);
-    blockBody->setRestitution(0.8f);
-    bWorld->addRigidBody(blockBody);
-    rigidBodies.insert(blockBody);
-    AI *ogreAI = new AI(blockBody,"ogre");
-    AIObjects.push_back(ogreAI);
+    if(hosting)
+    {
+        btCollisionShape* blockShape =  new btBoxShape(btVector3(75.0f,75.0f,75.0f));
+        btDefaultMotionState* blockMotionState =
+                    new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1),
+                                             btVector3(pos.x,pos.y,pos.z)));
+        btScalar bmass (100.0);
+        btVector3 fallInertia(0, 0, 0);
+        blockShape->calculateLocalInertia(bmass, fallInertia);
+        btRigidBody::btRigidBodyConstructionInfo blockRBCI(bmass, blockMotionState,blockShape,fallInertia);
+        btRigidBody* blockBody = new btRigidBody(blockRBCI);
+        blockBody->setUserPointer(node);
+        blockBody->setRestitution(0.8f);
+        bWorld->addRigidBody(blockBody);
+        rigidBodies.insert(blockBody);
+        AI *ogreAI = new AI(blockBody,"ogre");
+        AIObjects.push_back(ogreAI);
+    }
 
     /*************************************************************************************
     * Begin GUI Creation Block                                                           *

@@ -78,16 +78,7 @@ bool BaseApplication::configure(void)
     // Show the configuration dialog and initialise the system.
     // You can skip this and use root.restoreConfig() to load configuration
     // settings if you were sure there are valid ones saved in ogre.cfg.
-  /*if(hosting)
-    {
-        auto rs = *begin(mRoot->getAvailableRenderers());
-        mRoot->setRenderSystem(rs);
-        rs->setConfigOption("Full Screen", "No");
-        rs->setConfigOption("Video Mode", "640 x 480");
-        mWindow = mRoot->initialise(true, "TutorialApplication Render Window");
-        return true;
-    }
-    else*/ if(mRoot->showConfigDialog())
+    if(mRoot->showConfigDialog())
     {
         // If returned true, user clicked OK so initialise.
         // Here we choose to let the system create a default rendering window by passing 'true'.
@@ -95,9 +86,7 @@ bool BaseApplication::configure(void)
         return true;
     }
     else
-    {
         return false;
-    }
 }
 //---------------------------------------------------------------------------
 void BaseApplication::chooseSceneManager(void)
@@ -116,8 +105,6 @@ void BaseApplication::createCamera(void)
     mCamera = mSceneMgr->createCamera("PlayerCam");
 
     mCamera->setNearClipDistance(5);
-
-    //mCameraMan = new OgreBites::SdkCameraMan(mCamera);   // Create a default camera controller
 }
 //---------------------------------------------------------------------------
 void BaseApplication::createFrameListener(void)
@@ -292,6 +279,12 @@ void BaseApplication::closeSound(void)
 //---------------------------------------------------------------------------
 void BaseApplication::playSound(int index)
 {
+    if(hosting)
+    {
+        std::string s = "sound ";
+        s = s + std::to_string(index) + " ";
+        nMan.messageClients(PROTOCOL_ALL, s.c_str(), s.size());
+    }
     Mix_PlayChannel(-1, mix_chunks[index], 0);
 }
 //---------------------------------------------------------------------------
@@ -335,8 +328,8 @@ void BaseApplication::go(void)
         {
             b = mRoot->renderOneFrame();
             milliseconds now = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
-            if(now-ms < milliseconds(10))
-                std::this_thread::sleep_for(milliseconds(10) - (now - ms));
+            if(now-ms < milliseconds(15))
+                std::this_thread::sleep_for(milliseconds(15) - (now - ms));
             ms = now;
         }
     }
@@ -406,7 +399,8 @@ bool BaseApplication::setup(void)
     // Load resources
     loadResources();
     // Create Bullet world and hook callback in
-    createBulletSim();
+    if(hosting)
+        createBulletSim();
     // Create the scene
     createScene();
 
@@ -417,62 +411,21 @@ bool BaseApplication::setup(void)
 //---------------------------------------------------------------------------
 bool BaseApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
 {
-    while(nMan.scanForActivity())
-    {
-        if(!hosting)
-        {
-            std::cout << "Message: " << nMan.tcpServerData.output << std::endl;
-            nMan.tcpServerData.updated = false;
-        }
-    }
-
     if(mWindow->isClosed())
         return false;
 
     if(mShutDown)
         return false;
 
+    if(hosting)
+        hostRendering(evt);
+    else
+        clientRendering(evt);
+
     // Need to capture/update each device
     mKeyboard->capture();
     mMouse->capture();
 
-    bWorld->stepSimulation(evt.timeSinceLastFrame * 2, 10);
-    btTransform trans;
-    for(auto rb : rigidBodies)
-    {
-        rb->getMotionState()->getWorldTransform(trans);
-        Ogre::SceneNode *sn = static_cast<Ogre::SceneNode *> (rb->getUserPointer());
-        auto origin = trans.getOrigin();
-        sn->setPosition(origin.getX(),
-                        origin.getY(),
-                        origin.getZ());
-        auto orient = rb->getOrientation();
-        sn->setOrientation(orient.getW(),
-                           orient.getX(),
-                           orient.getY(),
-                           orient.getZ());
-    }
-    if(batBody)
-    {
-        auto orient  = batBody->getOrientation();
-        batSpinNode->setOrientation(orient.getW(),
-                                    orient.getX(),
-                                    orient.getY(),
-                                    orient.getZ());
-    }
-    if(!batSwing)
-    {
-        camSpinNode->yaw(Ogre::Radian(yawPerSec * evt.timeSinceLastFrame));
-        Ogre::Vector3 currentMainPos = mainNode->getPosition();
-        currentMainPos += cameraVelocity * evt.timeSinceLastFrame;
-        mainNode->setPosition(currentMainPos);
-    }
-
-    float scale = (4+charge*3/5)*3;
-    batNode->setScale(scale,scale,scale);
-    for(int i = 0; i < AIObjects.size(); ++i){
-        AIObjects[i]->patrol();
-    }
     mTrayMgr->frameRenderingQueued(evt);
 
     if (!mTrayMgr->isDialogVisible())
@@ -493,31 +446,125 @@ bool BaseApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
     mGUI->updateP1Score(score);
     return true;
 }
+
+//---------------------------------------------------------------------------
+void BaseApplication::hostRendering(const Ogre::FrameEvent& evt)
+{
+    std::string s;
+    bWorld->stepSimulation(evt.timeSinceLastFrame * 2, 10);
+    btTransform trans;
+    for(auto rb : rigidBodies)
+    {
+        rb->getMotionState()->getWorldTransform(trans);
+        Ogre::SceneNode *sn = static_cast<Ogre::SceneNode *> (rb->getUserPointer());
+        auto origin = trans.getOrigin();
+        sn->setPosition(origin.getX(),
+                        origin.getY(),
+                        origin.getZ());
+        auto orient = rb->getOrientation();
+        sn->setOrientation(orient.getW(),
+                           orient.getX(),
+                           orient.getY(),
+                           orient.getZ());
+        s = "snPos " +
+            sn->getName() + " " +
+            std::to_string(origin.getX()) + " " +
+            std::to_string(origin.getY()) + " " +
+            std::to_string(origin.getZ()) + " ";
+        nMan.messageClients(PROTOCOL_ALL, s.c_str(), s.size());
+        s = "snOri " +
+            sn->getName() + " " +
+            std::to_string(orient.getW()) + " " +
+            std::to_string(orient.getX()) + " " +
+            std::to_string(orient.getY()) + " " +
+            std::to_string(orient.getZ()) + " ";
+        nMan.messageClients(PROTOCOL_ALL, s.c_str(), s.size());
+    }
+    if(batBody)
+    {
+        auto orient = batBody->getOrientation();
+        batSpinNode->setOrientation(orient.getW(),
+                                    orient.getX(),
+                                    orient.getY(),
+                                    orient.getZ());
+        s = "snOri " +
+            batSpinNode->getName() + " " +
+            std::to_string(orient.getW()) + " " +
+            std::to_string(orient.getX()) + " " +
+            std::to_string(orient.getY()) + " " +
+            std::to_string(orient.getZ()) + " ";
+        nMan.messageClients(PROTOCOL_ALL, s.c_str(), s.size());
+    }
+    if(!batSwing)
+    {
+        camSpinNode->yaw(Ogre::Radian(yawPerSec * evt.timeSinceLastFrame));
+        s = "snYaw " +
+            camSpinNode->getName() + " " +
+            std::to_string(yawPerSec * evt.timeSinceLastFrame) + " ";
+        Ogre::Vector3 mainPos = mainNode->getPosition();
+        mainPos += cameraVelocity * evt.timeSinceLastFrame;
+        mainNode->setPosition(mainPos);
+        s = "snPos " +
+            mainNode->getName() + " " +
+            std::to_string(mainPos.x) + " " +
+            std::to_string(mainPos.y) + " " +
+            std::to_string(mainPos.z) + " ";
+        nMan.messageClients(PROTOCOL_ALL, s.c_str(), s.size());
+    }
+    float scale = (4+charge*3/5)*3;
+    batNode->setScale(scale,scale,scale);
+    s = "snScale " +
+        std::to_string(scale) + " " +
+        std::to_string(scale) + " " +
+        std::to_string(scale) + " ";
+        nMan.messageClients(PROTOCOL_ALL, s.c_str(), s.size());
+    for(int i = 0; i < AIObjects.size(); ++i){
+        AIObjects[i]->patrol();
+    }
+}
+//---------------------------------------------------------------------------
+void BaseApplication::clientRendering(const Ogre::FrameEvent& evt)
+{
+    std::string in;
+    while(nMan.scanForActivity())
+    {
+        //std::cout << "Message: " << nMan.tcpServerData.output << std::endl;
+        in += nMan.tcpServerData.output;
+        nMan.tcpServerData.updated = false;
+    }
+    buffer = std::istringstream(in);
+    int c;
+    while(buffer >> c)
+        clientSwitch(c);
+}
+//---------------------------------------------------------------------------
+void BaseApplication::clientSwitch(int c)
+{
+    // Key
+    // 0 play sound
+    // 1 scene node position
+    // 2 scene node orientation
+    // 3 scene node yaw
+    // 4 scene node scale
+    switch(c)
+    {
+        case 0:
+            int i;
+            buffer >> i;
+            playSound(i);
+            std::cout << "Playing sound at behest of host" << std::endl;
+            return;
+    }
+}
 //---------------------------------------------------------------------------
 void BaseApplication::message(std::string msg)
 {
-    static int len = 0;
     int i = 0;
-    if(msg.size() + len < 128)
-    {
-        len += msg.size();
-        message2(msg);
-        return;
-    }
-
-    i = 128 - len;
-    message2(msg.substr(0, i));
-
-    for(; msg.size() - i >= 128; i += 128)
-        message2(msg.substr(i, 128));
+    for(; msg.size() - i >= 255; i += 255)
+        message2(msg.substr(i, 255));
 
     if(msg.size() > i)
-    {
-        len = msg.size() - i;
-        message2(msg.substr(i, len));
-    }
-    else
-        len = 0;
+        message2(msg.substr(i, msg.size() - i));
 }
 //---------------------------------------------------------------------------
 void BaseApplication::message2(std::string msg)
@@ -629,14 +676,8 @@ bool BaseApplication::keyPressed( const OIS::KeyEvent &arg )
         yawPerSec =  M_PI/4;
     else if (arg.key == OIS::KC_E)
         yawPerSec = -M_PI/4;
-    else if (arg.key == OIS::KC_R)
+    else if (arg.key == OIS::KC_R and hosting)
     {
-        if(hosting)
-            for(int i = 0; i < 100; ++i)
-            {
-                std::string s = std::string("test" + std::to_string(i));
-                message(s);
-            }
         static int i = -1;
         Ogre::Entity*    ent;
         Ogre::SceneNode* sphereNode;
@@ -700,7 +741,6 @@ bool BaseApplication::keyPressed( const OIS::KeyEvent &arg )
                 Mix_PauseMusic();
         }
     }
-    //mCameraMan->injectKeyDown(arg);
 
     return true;
 }

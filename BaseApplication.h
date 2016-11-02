@@ -39,10 +39,11 @@ http://www.ogre3d.org/wiki/
 // stl
 #include <cmath>         /* abs, pow, sqrt  */
 #include <string>        /* to_string       */
+#include <sstream>       /* istringstream   */
 #include <stdlib.h>      /* srand, rand     */
 #include <time.h>        /* time            */
-#include <chrono>
-#include <thread>
+#include <chrono>        /* milliseconds, duration_cast*/
+#include <thread>        /* sleep_for       */
 #include <queue>         /* queue           */
 #include <unordered_set> /* unordered_set   */
 #include <vector>        /* vector          */
@@ -125,14 +126,17 @@ protected:
     virtual void loadResources(void);
     virtual void createBulletSim(void);
     virtual bool frameRenderingQueued(const Ogre::FrameEvent& evt);
+    virtual void hostRendering(const Ogre::FrameEvent& evt);
+    virtual void clientRendering(const Ogre::FrameEvent& evt);
+    virtual void clientSwitch(int c);
 
     virtual void message (std::string msg);
     virtual void message2(std::string msg);
 
-    virtual bool keyPressed(const OIS::KeyEvent &arg);
-    virtual bool keyReleased(const OIS::KeyEvent &arg);
-    virtual bool mouseMoved(const OIS::MouseEvent &arg);
-    virtual bool mousePressed(const OIS::MouseEvent &arg, OIS::MouseButtonID id);
+    virtual bool keyPressed   (const OIS::KeyEvent   &arg);
+    virtual bool keyReleased  (const OIS::KeyEvent   &arg);
+    virtual bool mouseMoved   (const OIS::MouseEvent &arg);
+    virtual bool mousePressed (const OIS::MouseEvent &arg, OIS::MouseButtonID id);
     virtual bool mouseReleased(const OIS::MouseEvent &arg, OIS::MouseButtonID id);
 
     // Adjust mouse clipping area
@@ -198,12 +202,14 @@ protected:
     std::vector<Mix_Chunk*>     mix_chunks;  // the chunks of audio
     Mix_Music* gMusic;
 
+    // Network
     NetManager nMan;
     bool hosting;
+    std::istringstream buffer;
 
     std::vector<AI*> AIObjects;
 
-    //GUI
+    // GUI
     SGUI* mGUI;
 
 #ifdef OGRE_STATIC_LIB
