@@ -63,8 +63,8 @@ struct ConnectionInfo {
 struct ClientData {
   Uint32 host;                        //!< To differentiate bin owners.
   bool updated;                       //!< Indicates new network output.
-  char output[128];                   //!< Received network data.
-  char input [128];                    //!< Target for automatic data pulls.
+  char output[512];                   //!< Received network data.
+  char input [512];                    //!< Target for automatic data pulls.
 };
 
 

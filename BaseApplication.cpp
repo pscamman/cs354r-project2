@@ -281,8 +281,8 @@ void BaseApplication::playSound(int index)
 {
     if(hosting)
     {
-        std::string s = "sound ";
-        s = s + std::to_string(index) + " ";
+        std::string s = "0\n";
+        s = s + std::to_string(index) + "\n";
         nMan.messageClients(PROTOCOL_ALL, s.c_str(), s.size());
     }
     Mix_PlayChannel(-1, mix_chunks[index], 0);
@@ -365,8 +365,11 @@ bool BaseApplication::setup(void)
         std::string ip;
         do
         {
-            std::cout << "Host IP?" << std::endl;
+            // close and open every time, in case last loop iteration invalidated
+            nMan.close();
+            carryOn = nMan.initNetManager();
             if(!carryOn) return false;
+            std::cout << "Host IP?" << std::endl;
             std::getline(std::cin, ip);
             nMan.addNetworkInfo(PROTOCOL_ALL, ip.c_str(), 51215);
             carryOn = nMan.startClient();
@@ -440,13 +443,16 @@ bool BaseApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
         }
     }
 
-    //mGUI->updateP1Score(score);
+    mGUI->updateP1Score(score);
     return true;
 }
 
 //---------------------------------------------------------------------------
 void BaseApplication::hostRendering(const Ogre::FrameEvent& evt)
 {
+    while(nMan.scanForActivity())
+    {
+    }
     std::string s;
     bWorld->stepSimulation(evt.timeSinceLastFrame * 2, 10);
     btTransform trans;
@@ -463,18 +469,18 @@ void BaseApplication::hostRendering(const Ogre::FrameEvent& evt)
                            orient.getX(),
                            orient.getY(),
                            orient.getZ());
-        s = "1 " +
-            sn->getName()                 + " " +
-            std::to_string(origin.getX()) + " " +
-            std::to_string(origin.getY()) + " " +
+        s = "1\n" +
+            sn->getName()                 + "\n" +
+            std::to_string(origin.getX()) + "\n" +
+            std::to_string(origin.getY()) + "\n" +
             std::to_string(origin.getZ()) + " ";
         //nMan.messageClients(PROTOCOL_ALL, s.c_str(), s.size());
-        s = "2 " +
-            sn->getName()                 + " " +
-            std::to_string(orient.getW()) + " " +
-            std::to_string(orient.getX()) + " " +
-            std::to_string(orient.getY()) + " " +
-            std::to_string(orient.getZ()) + " ";
+        s = "2\n" +
+            sn->getName()                 + "\n" +
+            std::to_string(orient.getW()) + "\n" +
+            std::to_string(orient.getX()) + "\n" +
+            std::to_string(orient.getY()) + "\n" +
+            std::to_string(orient.getZ()) + "\n";
         //nMan.messageClients(PROTOCOL_ALL, s.c_str(), s.size());
     }
     if(batBody)
@@ -484,38 +490,38 @@ void BaseApplication::hostRendering(const Ogre::FrameEvent& evt)
                                     orient.getX(),
                                     orient.getY(),
                                     orient.getZ());
-        s = "2 " +
-            batSpinNode->getName()        + " " +
-            std::to_string(orient.getW()) + " " +
-            std::to_string(orient.getX()) + " " +
-            std::to_string(orient.getY()) + " " +
-            std::to_string(orient.getZ()) + " ";
+        s = "2\n" +
+            batSpinNode->getName()        + "\n" +
+            std::to_string(orient.getW()) + "\n" +
+            std::to_string(orient.getX()) + "\n" +
+            std::to_string(orient.getY()) + "\n" +
+            std::to_string(orient.getZ()) + "\n";
         //nMan.messageClients(PROTOCOL_ALL, s.c_str(), s.size());
     }
     if(!batSwing)
     {
         Ogre::Real y = yawPerSec * evt.timeSinceLastFrame;
         camSpinNode->yaw(Ogre::Radian(y));
-        s = "3 " +
-            camSpinNode->getName() + " " +
-            std::to_string(y)      + " ";
+        s = "3\n" +
+            camSpinNode->getName() + "\n" +
+            std::to_string(y)      + "\n";
         Ogre::Vector3 mainPos = mainNode->getPosition();
         mainPos += cameraVelocity * evt.timeSinceLastFrame;
         mainNode->setPosition(mainPos);
         s = "1 " +
-            mainNode->getName()       + " " +
-            std::to_string(mainPos.x) + " " +
-            std::to_string(mainPos.y) + " " +
-            std::to_string(mainPos.z) + " ";
+            mainNode->getName()       + "\n" +
+            std::to_string(mainPos.x) + "\n" +
+            std::to_string(mainPos.y) + "\n" +
+            std::to_string(mainPos.z) + "\n";
         //nMan.messageClients(PROTOCOL_ALL, s.c_str(), s.size());
     }
     float scale = (4+charge*3/5)*3;
     batNode->setScale(scale,scale,scale);
-    s = "4 " +
-        batNode->getName()    + " " +
-        std::to_string(scale) + " " +
-        std::to_string(scale) + " " +
-        std::to_string(scale) + " ";
+    s = "4\n" +
+        batNode->getName()    + "\n" +
+        std::to_string(scale) + "\n" +
+        std::to_string(scale) + "\n" +
+        std::to_string(scale) + "\n";
         //nMan.messageClients(PROTOCOL_ALL, s.c_str(), s.size());
     for(int i = 0; i < AIObjects.size(); ++i){
         AIObjects[i]->patrol();
@@ -524,11 +530,10 @@ void BaseApplication::hostRendering(const Ogre::FrameEvent& evt)
 //---------------------------------------------------------------------------
 void BaseApplication::clientRendering(const Ogre::FrameEvent& evt)
 {
-    std::cout << "clientRendering" << std::endl;
     std::string in;
     while(nMan.scanForActivity())
     {
-        //std::cout << "Message: " << nMan.tcpServerData.output << std::endl;
+        std::cout << "Message: " << nMan.tcpServerData.output << std::endl;
         in += nMan.tcpServerData.output;
         nMan.tcpServerData.updated = false;
     }
@@ -551,6 +556,8 @@ void BaseApplication::clientSwitch(std::istringstream& buffer)
     buffer >> c;
     switch(c)
     {
+        default:
+            return;
         case 0:
             int i;
             buffer >> i;
@@ -812,9 +819,12 @@ bool BaseApplication::mousePressed(const OIS::MouseEvent &arg, OIS::MouseButtonI
     // END OF CEGUI HANDLER
     if(id == OIS::MB_Left)
     {
-        batCharge = true;
-        if(not batSwing)
-            playSound(0);
+        if(hosting)
+        {
+            batCharge = true;
+            if(not batSwing)
+                playSound(0);
+        }
     }
 
     //if (mTrayMgr->injectMouseDown(arg, id)) return true;
@@ -833,31 +843,34 @@ bool BaseApplication::mouseReleased(const OIS::MouseEvent &arg, OIS::MouseButton
     if(mTrayMgr->injectMouseUp(arg, id)) return true;
     //mCameraMan->injectMouseUp(arg, id);
 
-    if(batCharge and id == OIS::MB_Left)
+    if(id == OIS::MB_Left)
     {
-        batCharge = false;
-        if(not batSwing)
+        if(hosting and batCharge)
         {
-            batSwing  = true;
-            Ogre::Vector3 pos = mainNode->getPosition();
-            btCollisionShape* batShape =  new btBoxShape(btVector3(300.0f,50.0f,50.0f));
-            btDefaultMotionState* batMotionState =
-                        new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1),
-                                                 btVector3(pos.x+200, pos.y, pos.z)));
-            btScalar bmass (100.0);
-            btVector3 fallInertia(0, 0, 0);
-            batShape->calculateLocalInertia(bmass, fallInertia);
-            btRigidBody::btRigidBodyConstructionInfo batRBCI(bmass, batMotionState,batShape,fallInertia);
-            batBody = new btRigidBody(batRBCI);
-            batBody->setUserPointer(batNode);
-            batBody->setRestitution(0.8f);
-            batBody->setAngularVelocity(btVector3(0, 4+charge*3/5*M_PI, 0));
-            bWorld->addRigidBody(batBody);
+            batCharge = false;
+            if(not batSwing)
+            {
+                batSwing  = true;
+                Ogre::Vector3 pos = mainNode->getPosition();
+                btCollisionShape* batShape =  new btBoxShape(btVector3(300.0f,50.0f,50.0f));
+                btDefaultMotionState* batMotionState =
+                            new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1),
+                                                     btVector3(pos.x+200, pos.y, pos.z)));
+                btScalar bmass (100.0);
+                btVector3 fallInertia(0, 0, 0);
+                batShape->calculateLocalInertia(bmass, fallInertia);
+                btRigidBody::btRigidBodyConstructionInfo batRBCI(bmass, batMotionState,batShape,fallInertia);
+                batBody = new btRigidBody(batRBCI);
+                batBody->setUserPointer(batNode);
+                batBody->setRestitution(0.8f);
+                batBody->setAngularVelocity(btVector3(0, 4+charge*3/5*M_PI, 0));
+                bWorld->addRigidBody(batBody);
 
-            batHinge = new btHingeConstraint(*batBody,
-                                             btVector3(-200, 0, 0),
-                                             btVector3(0,1,0));
-            bWorld->addConstraint(batHinge);
+                batHinge = new btHingeConstraint(*batBody,
+                                                 btVector3(-200, 0, 0),
+                                                 btVector3(0,1,0));
+                bWorld->addConstraint(batHinge);
+            }
         }
     }
 }
