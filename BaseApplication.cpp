@@ -366,15 +366,12 @@ bool BaseApplication::setup(void)
         do
         {
             std::cout << "Host IP?" << std::endl;
-            nMan.close();
-            carryOn = nMan.initNetManager();
             if(!carryOn) return false;
             std::getline(std::cin, ip);
             nMan.addNetworkInfo(PROTOCOL_ALL, ip.c_str(), 51215);
             carryOn = nMan.startClient();
         }
         while(!carryOn);
-        std::cout << "Hostname: " << nMan.getHostname() << std::endl;
     }
 
     carryOn = setupSound();
@@ -443,7 +440,7 @@ bool BaseApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
         }
     }
 
-    mGUI->updateP1Score(score);
+    //mGUI->updateP1Score(score);
     return true;
 }
 
@@ -466,19 +463,19 @@ void BaseApplication::hostRendering(const Ogre::FrameEvent& evt)
                            orient.getX(),
                            orient.getY(),
                            orient.getZ());
-        s = "snPos " +
-            sn->getName() + " " +
+        s = "1 " +
+            sn->getName()                 + " " +
             std::to_string(origin.getX()) + " " +
             std::to_string(origin.getY()) + " " +
             std::to_string(origin.getZ()) + " ";
-        nMan.messageClients(PROTOCOL_ALL, s.c_str(), s.size());
-        s = "snOri " +
-            sn->getName() + " " +
+        //nMan.messageClients(PROTOCOL_ALL, s.c_str(), s.size());
+        s = "2 " +
+            sn->getName()                 + " " +
             std::to_string(orient.getW()) + " " +
             std::to_string(orient.getX()) + " " +
             std::to_string(orient.getY()) + " " +
             std::to_string(orient.getZ()) + " ";
-        nMan.messageClients(PROTOCOL_ALL, s.c_str(), s.size());
+        //nMan.messageClients(PROTOCOL_ALL, s.c_str(), s.size());
     }
     if(batBody)
     {
@@ -487,37 +484,39 @@ void BaseApplication::hostRendering(const Ogre::FrameEvent& evt)
                                     orient.getX(),
                                     orient.getY(),
                                     orient.getZ());
-        s = "snOri " +
-            batSpinNode->getName() + " " +
+        s = "2 " +
+            batSpinNode->getName()        + " " +
             std::to_string(orient.getW()) + " " +
             std::to_string(orient.getX()) + " " +
             std::to_string(orient.getY()) + " " +
             std::to_string(orient.getZ()) + " ";
-        nMan.messageClients(PROTOCOL_ALL, s.c_str(), s.size());
+        //nMan.messageClients(PROTOCOL_ALL, s.c_str(), s.size());
     }
     if(!batSwing)
     {
-        camSpinNode->yaw(Ogre::Radian(yawPerSec * evt.timeSinceLastFrame));
-        s = "snYaw " +
+        Ogre::Real y = yawPerSec * evt.timeSinceLastFrame;
+        camSpinNode->yaw(Ogre::Radian(y));
+        s = "3 " +
             camSpinNode->getName() + " " +
-            std::to_string(yawPerSec * evt.timeSinceLastFrame) + " ";
+            std::to_string(y)      + " ";
         Ogre::Vector3 mainPos = mainNode->getPosition();
         mainPos += cameraVelocity * evt.timeSinceLastFrame;
         mainNode->setPosition(mainPos);
-        s = "snPos " +
-            mainNode->getName() + " " +
+        s = "1 " +
+            mainNode->getName()       + " " +
             std::to_string(mainPos.x) + " " +
             std::to_string(mainPos.y) + " " +
             std::to_string(mainPos.z) + " ";
-        nMan.messageClients(PROTOCOL_ALL, s.c_str(), s.size());
+        //nMan.messageClients(PROTOCOL_ALL, s.c_str(), s.size());
     }
     float scale = (4+charge*3/5)*3;
     batNode->setScale(scale,scale,scale);
-    s = "snScale " +
+    s = "4 " +
+        batNode->getName()    + " " +
         std::to_string(scale) + " " +
         std::to_string(scale) + " " +
         std::to_string(scale) + " ";
-        nMan.messageClients(PROTOCOL_ALL, s.c_str(), s.size());
+        //nMan.messageClients(PROTOCOL_ALL, s.c_str(), s.size());
     for(int i = 0; i < AIObjects.size(); ++i){
         AIObjects[i]->patrol();
     }
@@ -525,6 +524,7 @@ void BaseApplication::hostRendering(const Ogre::FrameEvent& evt)
 //---------------------------------------------------------------------------
 void BaseApplication::clientRendering(const Ogre::FrameEvent& evt)
 {
+    std::cout << "clientRendering" << std::endl;
     std::string in;
     while(nMan.scanForActivity())
     {
@@ -532,13 +532,12 @@ void BaseApplication::clientRendering(const Ogre::FrameEvent& evt)
         in += nMan.tcpServerData.output;
         nMan.tcpServerData.updated = false;
     }
-    buffer = std::istringstream(in);
-    int c;
-    while(buffer >> c)
-        clientSwitch(c);
+    std::istringstream buffer(in);
+    while(buffer)
+        clientSwitch(buffer);
 }
 //---------------------------------------------------------------------------
-void BaseApplication::clientSwitch(int c)
+void BaseApplication::clientSwitch(std::istringstream& buffer)
 {
     // Key
     // 0 play sound
@@ -546,6 +545,10 @@ void BaseApplication::clientSwitch(int c)
     // 2 scene node orientation
     // 3 scene node yaw
     // 4 scene node scale
+    std::string s;
+    float f;
+    int c;
+    buffer >> c;
     switch(c)
     {
         case 0:
@@ -554,6 +557,27 @@ void BaseApplication::clientSwitch(int c)
             playSound(i);
             std::cout << "Playing sound at behest of host" << std::endl;
             return;
+        case 1:
+            buffer >> s;
+            buffer >> f;
+            buffer >> f;
+            buffer >> f;
+            return;
+        case 2:
+            buffer >> s;
+            buffer >> f;
+            buffer >> f;
+            buffer >> f;
+            buffer >> f;
+            return;
+        case 3:
+            buffer >> s;
+            buffer >> f;
+        case 4:
+            buffer >> s;
+            buffer >> f;
+            buffer >> f;
+            buffer >> f;
     }
 }
 //---------------------------------------------------------------------------

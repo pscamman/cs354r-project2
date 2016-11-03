@@ -128,7 +128,7 @@ protected:
     virtual bool frameRenderingQueued(const Ogre::FrameEvent& evt);
     virtual void hostRendering(const Ogre::FrameEvent& evt);
     virtual void clientRendering(const Ogre::FrameEvent& evt);
-    virtual void clientSwitch(int c);
+    virtual void clientSwitch(std::istringstream& c);
 
     virtual void message (std::string msg);
     virtual void message2(std::string msg);
@@ -205,7 +205,6 @@ protected:
     // Network
     NetManager nMan;
     bool hosting;
-    std::istringstream buffer;
 
     std::vector<AI*> AIObjects;
 

@@ -63,8 +63,8 @@ struct ConnectionInfo {
 struct ClientData {
   Uint32 host;                        //!< To differentiate bin owners.
   bool updated;                       //!< Indicates new network output.
-  char output[512];                   //!< Received network data.
-  char input [512];                    //!< Target for automatic data pulls.
+  char output[128];                   //!< Received network data.
+  char input [128];                    //!< Target for automatic data pulls.
 };
 
 
@@ -206,7 +206,7 @@ private:
     SOCKET_ALL_MAX      = SOCKET_TCP_MAX + SOCKET_UDP_MAX,
     SOCKET_SELF         = SOCKET_ALL_MAX + 1,
     MESSAGE_COUNT       = 10,
-    MESSAGE_LENGTH      = 512,
+    MESSAGE_LENGTH      = 256,
     MASK_DEPTH          = 24
     ///@}
   };
