@@ -1,7 +1,11 @@
 # cs354r-project2
 
-To build and run:
-./buildit && ./BattingSimulator
+## To build and run:
+1. ./buildit && ./BattingSimulator
+2. Say 'y' to host, or if a host is already running say 'n' and enter the appropriate address (localhost works if host and client are on the same machine).
+3. DO NOT CLICK ON THE BACKGROUND
+4. Double click on 'Single Player' to start the game. A single click will not work right now! 'Multi Player' will currently do nothing.
+5. Hold down left click to power up the bat like before. R serves a ball to the player like before. Hitting point blocks to the floor will now award points on the GUI, as will hitting the ogre head with a ball.
 
 ## Current progress for 3.2 milestone:
 Currently we have the beginnings of our network functionality and most of our GUI functionality. We have also begun adding some AI features to improve the gameplay.

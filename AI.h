@@ -10,14 +10,14 @@ struct Vector3d {
 
 class AI{
 protected:
-	vector3d speed;
+	Ogre::Vector3 speed;
 	btRigidBody* btBody;
+	Ogre::Vector3 originalPos;
 public:
-	std::string name;
 	bool vulnerability;
-	AI(btRigidBody*, std::string);
+	AI(btRigidBody*);
 	~AI(void);
 	void patrol(void);
-	void vulnerable(void);
+	void vulnerable(bool);
 };
 #endif 

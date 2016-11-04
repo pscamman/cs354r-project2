@@ -44,6 +44,7 @@ BaseApplication::BaseApplication(void)
     batSwing(false),
     cameraVelocity(Ogre::Vector3::ZERO),
     yawPerSec(0),
+    particleIndex(0),
     gMusic(NULL),
     hosting(false)
 {
@@ -281,8 +282,8 @@ void BaseApplication::playSound(int index)
 {
     if(hosting)
     {
-        std::string s = "0\n";
-        s = s + std::to_string(index) + "\n";
+        std::string s = "\n0\n0\n";
+        s = s + std::to_string(index);
         nMan.messageClients(PROTOCOL_ALL, s.c_str(), s.size());
     }
     Mix_PlayChannel(-1, mix_chunks[index], 0);
@@ -443,7 +444,6 @@ bool BaseApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
         }
     }
 
-    mGUI->updateP1Score(score);
     return true;
 }
 
@@ -453,78 +453,95 @@ void BaseApplication::hostRendering(const Ogre::FrameEvent& evt)
     while(nMan.scanForActivity())
     {
     }
-    std::string s;
-    bWorld->stepSimulation(evt.timeSinceLastFrame * 2, 10);
-    btTransform trans;
-    for(auto rb : rigidBodies)
-    {
-        rb->getMotionState()->getWorldTransform(trans);
-        Ogre::SceneNode *sn = static_cast<Ogre::SceneNode *> (rb->getUserPointer());
-        auto origin = trans.getOrigin();
-        sn->setPosition(origin.getX(),
-                        origin.getY(),
-                        origin.getZ());
-        auto orient = rb->getOrientation();
-        sn->setOrientation(orient.getW(),
-                           orient.getX(),
-                           orient.getY(),
-                           orient.getZ());
-        s = "1\n" +
-            sn->getName()                 + "\n" +
-            std::to_string(origin.getX()) + "\n" +
-            std::to_string(origin.getY()) + "\n" +
-            std::to_string(origin.getZ()) + " ";
-        //nMan.messageClients(PROTOCOL_ALL, s.c_str(), s.size());
-        s = "2\n" +
-            sn->getName()                 + "\n" +
-            std::to_string(orient.getW()) + "\n" +
-            std::to_string(orient.getX()) + "\n" +
-            std::to_string(orient.getY()) + "\n" +
-            std::to_string(orient.getZ()) + "\n";
-        //nMan.messageClients(PROTOCOL_ALL, s.c_str(), s.size());
-    }
-    if(batBody)
-    {
-        auto orient = batBody->getOrientation();
-        batSpinNode->setOrientation(orient.getW(),
-                                    orient.getX(),
-                                    orient.getY(),
-                                    orient.getZ());
-        s = "2\n" +
-            batSpinNode->getName()        + "\n" +
-            std::to_string(orient.getW()) + "\n" +
-            std::to_string(orient.getX()) + "\n" +
-            std::to_string(orient.getY()) + "\n" +
-            std::to_string(orient.getZ()) + "\n";
-        //nMan.messageClients(PROTOCOL_ALL, s.c_str(), s.size());
-    }
-    if(!batSwing)
-    {
-        Ogre::Real y = yawPerSec * evt.timeSinceLastFrame;
-        camSpinNode->yaw(Ogre::Radian(y));
-        s = "3\n" +
-            camSpinNode->getName() + "\n" +
-            std::to_string(y)      + "\n";
-        Ogre::Vector3 mainPos = mainNode->getPosition();
-        mainPos += cameraVelocity * evt.timeSinceLastFrame;
-        mainNode->setPosition(mainPos);
-        s = "1 " +
-            mainNode->getName()       + "\n" +
-            std::to_string(mainPos.x) + "\n" +
-            std::to_string(mainPos.y) + "\n" +
-            std::to_string(mainPos.z) + "\n";
-        //nMan.messageClients(PROTOCOL_ALL, s.c_str(), s.size());
-    }
-    float scale = (4+charge*3/5)*3;
-    batNode->setScale(scale,scale,scale);
-    s = "4\n" +
-        batNode->getName()    + "\n" +
-        std::to_string(scale) + "\n" +
-        std::to_string(scale) + "\n" +
-        std::to_string(scale) + "\n";
-        //nMan.messageClients(PROTOCOL_ALL, s.c_str(), s.size());
-    for(int i = 0; i < AIObjects.size(); ++i){
-        AIObjects[i]->patrol();
+    if(mGUI->isStarted && !mGUI->isPaused) {
+        std::string s;
+        bWorld->stepSimulation(evt.timeSinceLastFrame * 2, 10);
+        btTransform trans;
+        for(auto rb : rigidBodies)
+        {
+            rb->getMotionState()->getWorldTransform(trans);
+            Ogre::SceneNode *sn = static_cast<Ogre::SceneNode *> (rb->getUserPointer());
+            auto origin = trans.getOrigin();
+            sn->setPosition(origin.getX(),
+                            origin.getY(),
+                            origin.getZ());
+            auto orient = rb->getOrientation();
+            sn->setOrientation(orient.getW(),
+                               orient.getX(),
+                               orient.getY(),
+                               orient.getZ());
+            s = "\n1\n1\n" +
+                sn->getName()                 + "\n" +
+                std::to_string(origin.getX()) + "\n" +
+                std::to_string(origin.getY()) + "\n" +
+                std::to_string(origin.getZ());
+            message(s);
+            s = "\n2\n2\n" +
+                sn->getName()                 + "\n" +
+                std::to_string(orient.getW()) + "\n" +
+                std::to_string(orient.getX()) + "\n" +
+                std::to_string(orient.getY()) + "\n" +
+                std::to_string(orient.getZ());
+            message(s);
+        }
+        if(batBody)
+        {
+            auto orient = batBody->getOrientation();
+            batSpinNode->setOrientation(orient.getW(),
+                                        orient.getX(),
+                                        orient.getY(),
+                                        orient.getZ());
+            s = "\n2\n2\n" +
+                batSpinNode->getName()        + "\n" +
+                std::to_string(orient.getW()) + "\n" +
+                std::to_string(orient.getX()) + "\n" +
+                std::to_string(orient.getY()) + "\n" +
+                std::to_string(orient.getZ());
+            message(s);
+        }
+        if(!batSwing)
+        {
+            Ogre::Real y = yawPerSec * evt.timeSinceLastFrame;
+            camSpinNode->yaw(Ogre::Radian(y));
+            s = "\n3\n3\n" +
+                camSpinNode->getName() + "\n" +
+                std::to_string(y);
+            message(s);
+            Ogre::Vector3 mainPos = mainNode->getPosition();
+            mainPos += cameraVelocity * evt.timeSinceLastFrame;
+            mainNode->setPosition(mainPos);
+            s = "\n1\n1\n" +
+                mainNode->getName()       + "\n" +
+                std::to_string(mainPos.x) + "\n" +
+                std::to_string(mainPos.y) + "\n" +
+                std::to_string(mainPos.z) + "\n";
+            message(s);
+        }
+        float scale = (4+charge*3/5)*3;
+        batNode->setScale(scale,scale,scale);
+        s = "\n4\n4\n" +
+            batNode->getName()    + "\n" +
+            std::to_string(scale) + "\n" +
+            std::to_string(scale) + "\n" +
+            std::to_string(scale);
+        message(s);
+        for(int i = 0; i < gameObjects.size(); ++i)
+            gameObjects[i]->updateAI();
+
+        mGUI->updateP1Score(score);
+        s = "\n6\n6\n" +
+            std::to_string(score);
+        message(s);
+        mGUI->updateTimer();
+        if(mGUI->timebox_time == 0) {
+           mGUI->setGOverScreenVisible(true);
+           mGUI->isGameOver = true;
+           mGUI->isStarted = false;
+        }
+        s = "\n7\n7\n" +
+            std::to_string(mGUI->timebox_time) + "\n" +
+            std::to_string(mGUI->tMod);
+        message(s);
     }
 }
 //---------------------------------------------------------------------------
@@ -533,13 +550,15 @@ void BaseApplication::clientRendering(const Ogre::FrameEvent& evt)
     std::string in;
     while(nMan.scanForActivity())
     {
-        std::cout << "Message: " << nMan.tcpServerData.output << std::endl;
+        //std::cout << "Message: " << nMan.tcpServerData.output << std::endl;
         in += nMan.tcpServerData.output;
         nMan.tcpServerData.updated = false;
     }
     std::istringstream buffer(in);
-    while(buffer)
-        clientSwitch(buffer);
+    char c;
+    if(in.size() > 0)
+        while(buffer >> c)
+            clientSwitch(buffer);
 }
 //---------------------------------------------------------------------------
 void BaseApplication::clientSwitch(std::istringstream& buffer)
@@ -550,55 +569,123 @@ void BaseApplication::clientSwitch(std::istringstream& buffer)
     // 2 scene node orientation
     // 3 scene node yaw
     // 4 scene node scale
-    std::string s;
-    float f;
+    // 5 scene node remove
+    // 6 score
+    // 7 time
+    // 8 scene node create
+
     int c;
     buffer >> c;
+
+    std::string s;
+    std::string s2;
+    std::string s3;
+    std::string s4;
+    std::string s5;
+    std::string s6;
+    std::string s7;
+    int   i;
+    float f1;
+    float f2;
+    float f3;
+    float f4;
+    bool  b;
+    Ogre::SceneNode* sn;
+
     switch(c)
     {
         default:
             return;
         case 0:
-            int i;
             buffer >> i;
             playSound(i);
-            std::cout << "Playing sound at behest of host" << std::endl;
             return;
         case 1:
             buffer >> s;
-            buffer >> f;
-            buffer >> f;
-            buffer >> f;
+            buffer >> f1;
+            buffer >> f2;
+            buffer >> f3;
+            sn = mSceneMgr->getSceneNode(s);
+            sn->setPosition(f1, f2, f3);
             return;
         case 2:
             buffer >> s;
-            buffer >> f;
-            buffer >> f;
-            buffer >> f;
-            buffer >> f;
+            buffer >> f1;
+            buffer >> f2;
+            buffer >> f3;
+            buffer >> f4;
+            sn = mSceneMgr->getSceneNode(s);
+            sn->setOrientation(f1, f2, f3, f4);
             return;
         case 3:
             buffer >> s;
-            buffer >> f;
+            buffer >> f1;
+            sn = mSceneMgr->getSceneNode(s);
+            sn->yaw(Ogre::Radian(f1));
+            return;
         case 4:
             buffer >> s;
-            buffer >> f;
-            buffer >> f;
-            buffer >> f;
+            buffer >> f1;
+            buffer >> f2;
+            buffer >> f3;
+            sn = mSceneMgr->getSceneNode(s);
+            sn->scale(f1, f2, f3);
+            return;
+        case 5:
+            buffer >> s;
+            sn = mSceneMgr->getSceneNode(s);
+            sn->removeAndDestroyAllChildren();
+            mSceneMgr->destroySceneNode(sn);
+            return;
+        case 6:
+            buffer >> i;
+            mGUI->updateP1Score(i);
+            return;
+        case 7:
+            buffer >> i;
+            buffer >> f1;
+            //mGUI->timebox_time = i;
+            //mGUI->tMod = f1;
+            mGUI->setTimer(i);
+            mGUI->updateTimer();
+            if(mGUI->timebox_time == 0)
+            {
+               mGUI->setGOverScreenVisible(true);
+               mGUI->isGameOver = true;
+               mGUI->isStarted = false;
+            }
+            return;
+        case 8:
+            buffer >> s;  // ename
+            buffer >> s2; // mname
+            buffer >> i;  // prefab
+            buffer >> b;  // shadows
+            buffer >> s3; // sname
+            buffer >> s4; // parent
+            buffer >> s5; // pname
+            buffer >> s6; // ptype
+            buffer >> s7; // pnode
+
+            Ogre::Entity* ent;
+            if(i == 0)
+                ent = mSceneMgr->createEntity(s, Ogre::SceneManager::PT_SPHERE);
+            ent->setMaterialName(s2);
+            ent->setCastShadows(b);
+
+            Ogre::SceneNode* parent = mSceneMgr->getRootSceneNode();
+            if(strcmp(s4.c_str(), "Ogre/SceneRoot"))
+                parent = mSceneMgr->getSceneNode(s4);
+            auto sphere = parent->createChildSceneNode(s3);
+            auto gn     = mSceneMgr->createParticleSystem(s5, s6);
+            auto pn     = sphere->createChildSceneNode(s7);
+
+            pn    ->attachObject(gn);
+            sphere->attachObject(ent);
+            return;
     }
 }
 //---------------------------------------------------------------------------
 void BaseApplication::message(std::string msg)
-{
-    int i = 0;
-    for(; msg.size() - i >= 255; i += 255)
-        message2(msg.substr(i, 255));
-
-    if(msg.size() > i)
-        message2(msg.substr(i, msg.size() - i));
-}
-//---------------------------------------------------------------------------
-void BaseApplication::message2(std::string msg)
 {
     if(hosting)
         nMan.messageClients(PROTOCOL_ALL, msg.c_str(), msg.size());
@@ -608,11 +695,42 @@ void BaseApplication::message2(std::string msg)
 //---------------------------------------------------------------------------
 bool BaseApplication::keyPressed( const OIS::KeyEvent &arg )
 {
+    /******************************************************************************
+     ** CEGUI Handler for key events, do not delete!                             **
+     ******************************************************************************/
+    CEGUI::GUIContext& context = CEGUI::System::getSingleton().getDefaultGUIContext();
+    context.injectKeyDown((CEGUI::Key::Scan)arg.key);
+    context.injectChar((CEGUI::Key::Scan)arg.text);
+    // END CEGUI Handler
+
     if (mTrayMgr->isDialogVisible()) return true;   // don't process any more keys if dialog is up
 
     if (arg.key == OIS::KC_F)   // toggle visibility of advanced frame stats
     {
         mTrayMgr->toggleAdvancedFrameStats();
+    }
+    else if (arg.key == OIS::KC_SPACE) {
+        if(mGUI->isStarted) {
+            if(!mGUI->isPaused) {
+                mGUI->setPauseVisible((mGUI->isPaused = true));
+            } else {
+                mGUI->setPauseVisible((mGUI->isPaused = false));
+            }
+        }
+        if(!mGUI->isStarted && mGUI->multiStarted) {
+            mGUI->isStarted = true;
+            mGUI->playerMessageVisible(false);
+        }
+        if(mGUI->isGameOver) {
+            mGUI->isGameOver = false;
+            mGUI->setGOverScreenVisible(false);
+            mGUI->setTimerVisible(false);
+            mGUI->setP1ScoreVisible(false);
+            mGUI->setP2ScoreVisible(false);
+            mGUI->setP3ScoreVisible(false);
+            mGUI->setP4ScoreVisible(false);
+            mGUI->setTitleScreenVisible(true);
+        }
     }
     else if (arg.key == OIS::KC_G)   // toggle visibility of even rarer debugging details
     {
@@ -716,17 +834,52 @@ bool BaseApplication::keyPressed( const OIS::KeyEvent &arg )
         pos.x += 300;
         pos.y += 1000;
         pos.z -= 100;
-        ent = mSceneMgr->createEntity("sphere"+std::to_string(++i), Ogre::SceneManager::PT_SPHERE);
-        ent->setMaterialName("Examples/BumpyMetal");
-        ent->setCastShadows(true);
-        sphereNode = mSceneMgr->getRootSceneNode()->createChildSceneNode("sphere"+std::to_string(++i));
+        std::string ename = "sphere"+std::to_string(++i);
+        ent = mSceneMgr->createEntity(ename, Ogre::SceneManager::PT_SPHERE);
+        std::string mname = "Examples/BumpyMetal";
+        ent->setMaterialName(mname);
+        bool shadows = true;
+        ent->setCastShadows(shadows);
+        std::string sname   = "sphere"+std::to_string(++i);
+        auto root  = mSceneMgr->getRootSceneNode();
+        sphereNode = root->createChildSceneNode(sname);
         sphereNode->setPosition(pos);
         sphereNode->setScale(.5, .5, .5);
-        Ogre::ParticleSystem* gn = mSceneMgr->createParticleSystem("GN"+std::to_string(++i), "Examples/GreenyNimbus");
-        Ogre::SceneNode* particleNode = sphereNode->createChildSceneNode("Particle"+std::to_string(++i));
+        std::string pname = "GN"+std::to_string(++i);
+        std::string ptype = "Examples/JetEngine1";
+        Ogre::ParticleSystem* gn = mSceneMgr->createParticleSystem(pname, ptype);
+        std::string pnode = "Particle"+std::to_string(++i);
+        Ogre::SceneNode* particleNode = sphereNode->createChildSceneNode(pnode);
         particleNode->attachObject(gn);
-
         sphereNode->attachObject(ent);
+
+        std::string s;
+        s = "\n8\n8\n"               +
+             ename                   + "\n" +
+             mname                   + "\n" +
+             std::to_string(0)       + "\n" +
+             std::to_string(shadows) + "\n" +
+             sname                   + "\n" +
+             root->getName()         + "\n" +
+             pname                   + "\n" +
+             ptype                   + "\n" +
+             pnode;
+        message(s);
+
+        s = "\n1\n1\n"            +
+            sname                 + "\n" +
+            std::to_string(pos.x) + "\n" +
+            std::to_string(pos.y) + "\n" +
+            std::to_string(pos.z);
+        message(s);
+
+        s = "\n4\n4\n"         +
+            sname              + "\n" +
+            std::to_string(.5) + "\n" +
+            std::to_string(.5) + "\n" +
+            std::to_string(.5);
+        message(s);
+
         btCollisionShape* ballShape =  new btSphereShape(25);
         btDefaultMotionState* ballMotionState =
             new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1),
@@ -740,6 +893,9 @@ bool BaseApplication::keyPressed( const OIS::KeyEvent &arg )
         ballBody->setUserPointer(sphereNode);
         ballBody->setRestitution(0.8f);
         bWorld->addRigidBody(ballBody);
+
+        GameObject* ballObj = new GameObject(sphereNode, ballBody);
+
         rigidBodies.insert(ballBody);
         balls.push(ballBody);
         if(balls.size() > 3)
@@ -778,6 +934,12 @@ bool BaseApplication::keyPressed( const OIS::KeyEvent &arg )
 //---------------------------------------------------------------------------
 bool BaseApplication::keyReleased(const OIS::KeyEvent &arg)
 {
+    /******************************************************************************
+     ** CEGUI Handler for key events, do not delete!                             **
+     ******************************************************************************/
+    CEGUI::System::getSingleton().getDefaultGUIContext().injectKeyUp((CEGUI::Key::Scan)arg.key);
+    // END CEGUI KEY HANDLER
+
     if (arg.key == OIS::KC_W)
         cameraVelocity.y = 0;
     else if (arg.key == OIS::KC_S)
@@ -815,20 +977,17 @@ bool BaseApplication::mousePressed(const OIS::MouseEvent &arg, OIS::MouseButtonI
      ** CEGUI Handler for mouse movement, do not delete!                         **
      ******************************************************************************/
     //CEGUI::GUIContext &mPress = CEGUI::System::getSingleton().getDefaultGUIContext();
-    CEGUI::System::getSingleton().getDefaultGUIContext().injectMouseButtonUp(mGUI->convertButton(id));
+    CEGUI::System::getSingleton().getDefaultGUIContext().injectMouseButtonDown(mGUI->convertButton(id));
     // END OF CEGUI HANDLER
-    if(id == OIS::MB_Left)
+    if((id == OIS::MB_Left or id == OIS::MB_Right)&& mGUI->isStarted && !mGUI->isPaused)
     {
-        if(hosting)
+        if(hosting and not batCharge)
         {
             batCharge = true;
             if(not batSwing)
                 playSound(0);
         }
     }
-
-    //if (mTrayMgr->injectMouseDown(arg, id)) return true;
-    //mCameraMan->injectMouseDown(arg, id);
     return true;
 }
 //---------------------------------------------------------------------------
@@ -838,39 +997,38 @@ bool BaseApplication::mouseReleased(const OIS::MouseEvent &arg, OIS::MouseButton
      ** CEGUI Handler for mouse movement, do not delete!                         **
      ******************************************************************************/
     //CEGUI::GUIContext &mRel = CEGUI::System::getSingleton().getDefaultGUIContext();
-    CEGUI::System::getSingleton().getDefaultGUIContext().injectMouseButtonDown(mGUI->convertButton(id));
+    CEGUI::System::getSingleton().getDefaultGUIContext().injectMouseButtonUp(mGUI->convertButton(id));
     // END OF CEGUI HANDLER
     if(mTrayMgr->injectMouseUp(arg, id)) return true;
     //mCameraMan->injectMouseUp(arg, id);
-
-    if(id == OIS::MB_Left)
+    if(hosting and batCharge and mGUI->isStarted and !mGUI->isPaused)
     {
-        if(hosting and batCharge)
+        batCharge = false;
+        if(not batSwing)
         {
-            batCharge = false;
-            if(not batSwing)
-            {
-                batSwing  = true;
-                Ogre::Vector3 pos = mainNode->getPosition();
-                btCollisionShape* batShape =  new btBoxShape(btVector3(300.0f,50.0f,50.0f));
-                btDefaultMotionState* batMotionState =
-                            new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1),
-                                                     btVector3(pos.x+200, pos.y, pos.z)));
-                btScalar bmass (100.0);
-                btVector3 fallInertia(0, 0, 0);
-                batShape->calculateLocalInertia(bmass, fallInertia);
-                btRigidBody::btRigidBodyConstructionInfo batRBCI(bmass, batMotionState,batShape,fallInertia);
-                batBody = new btRigidBody(batRBCI);
-                batBody->setUserPointer(batNode);
-                batBody->setRestitution(0.8f);
+            batSwing  = true;
+            Ogre::Vector3 pos = mainNode->getPosition();
+            btCollisionShape* batShape =  new btBoxShape(btVector3(300.0f,50.0f,50.0f));
+            btDefaultMotionState* batMotionState =
+                        new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1),
+                                                 btVector3(pos.x+200, pos.y, pos.z)));
+            btScalar bmass (100.0);
+            btVector3 fallInertia(0, 0, 0);
+            batShape->calculateLocalInertia(bmass, fallInertia);
+            btRigidBody::btRigidBodyConstructionInfo batRBCI(bmass, batMotionState,batShape,fallInertia);
+            batBody = new btRigidBody(batRBCI);
+            batBody->setUserPointer(batNode);
+            batBody->setRestitution(0.8f);
+            if(id == OIS::MB_Left)
                 batBody->setAngularVelocity(btVector3(0, 4+charge*3/5*M_PI, 0));
-                bWorld->addRigidBody(batBody);
+            else if(id == OIS::MB_Right)
+                batBody->setAngularVelocity(btVector3(0, -(4+charge*3/5*M_PI), 0));
+            bWorld->addRigidBody(batBody);
 
-                batHinge = new btHingeConstraint(*batBody,
-                                                 btVector3(-200, 0, 0),
-                                                 btVector3(0,1,0));
-                bWorld->addConstraint(batHinge);
-            }
+            batHinge = new btHingeConstraint(*batBody,
+                                             btVector3(-200, 0, 0),
+                                             btVector3(0,1,0));
+            bWorld->addConstraint(batHinge);
         }
     }
 }
@@ -907,6 +1065,7 @@ void BaseApplication::windowClosed(Ogre::RenderWindow* rw)
 //callback to have handle on bullet time
 void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
 {
+    bApp->mGUI->tMod += timeStep;
     if(bApp->batCharge)
     {
         bApp->charge += timeStep;
@@ -925,7 +1084,20 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
             bApp->swing  = 0.0f;
             bApp->batSwing = false;
             bApp->batSpinNode->setOrientation(0, 0, 0, 1);
-            bApp->batSpinNode->yaw(Ogre::Radian(Ogre::Real((float)M_PI)));
+            std::string s;
+            s = "\n2\n2\n" +
+                bApp->batSpinNode->getName() + "\n" +
+                std::to_string(0)      + "\n" +
+                std::to_string(0)      + "\n" +
+                std::to_string(0)      + "\n" +
+                std::to_string(1);
+            bApp->message(s);
+            float f = (float)M_PI;
+            bApp->batSpinNode->yaw(Ogre::Radian(Ogre::Real(f)));
+            s = "\n3\n3\n" +
+                bApp->batSpinNode->getName() + "\n" +
+                std::to_string(f);
+            bApp->message(s);
             bApp->bWorld->removeConstraint(bApp->batHinge);
             delete bApp->batHinge;
             bApp->bWorld->removeRigidBody(bApp->batBody);
@@ -970,32 +1142,43 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
         if(sphereA and (blockB or pointB) or sphereB and (blockA or pointA))
         {
             int numContacts = contactManifold->getNumContacts();
-            for(int j=0;j<numContacts;++j)
+            if (numContacts)
             {
-                btManifoldPoint& pt = contactManifold->getContactPoint(j);
-                if (pt.getAppliedImpulse()>0.f)
-                {
+                for(int i = 0; i < bApp->gameObjects.size(); ++i){
+                    auto obj = bApp->gameObjects[i];
+                    if(obj->hasAI && obj->ai->vulnerability){
 
-                    bApp->playSound(1);
-                    break;
+                        Ogre::ParticleSystem* gn = bApp->mSceneMgr->createParticleSystem(
+                                    "GM"+ std::to_string(bApp->particleIndex), "Examples/GreenyNimbus");
+                        bApp->particleIndex+= 1;
+                        obj->ai->vulnerable(false);
+                        obj->attachParticleSystem(gn);
+                        break;
+                    }
+
                 }
+                bApp->playSound(1);
+                break;
             }
         }
         if(groundA and pointB or groundB and pointA)
         {
             int numContacts = contactManifold->getNumContacts();
-            for(int j=0;j<numContacts;++j)
+            if (numContacts)
             {
-                btManifoldPoint& pt = contactManifold->getContactPoint(j);
-                if (pt.getAppliedImpulse()>0.f)
-                {
-                    // bApp->AIObjects[0]->vulnerable();
-                    toRemove.insert(static_cast<btRigidBody*>(pointA ? obA : obB));
-                    score += 10;
-                    bApp->playSound(3);
-                    break;
+                score += 10;
+                toRemove.insert(static_cast<btRigidBody*>(pointA ? obA : obB));
+                for(int i = 0; i < bApp->gameObjects.size(); ++i){
+                    auto obj = bApp->gameObjects[i];
+                    if(obj->hasAI && !obj->ai->vulnerability){
+                        obj->ai->vulnerable(true);
+                        obj->removeParticleSystem();
+                    }
                 }
+                bApp->playSound(3);
+                break;
             }
+
         }
         if(batA and sphereB or batB and sphereA)
         {
@@ -1013,14 +1196,19 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
             int numContacts = contactManifold->getNumContacts();
             if (numContacts)
             {
-                for(int i = 0; i < bApp->AIObjects.size(); ++i){
-                    if(bApp->AIObjects[i]->name == "ogre" ){
-                        delete bApp->AIObjects[i];
-                        bApp->AIObjects.erase(bApp->AIObjects.begin()+i);
-                        score += 50;
+                bool destory = false;
+                for(int i = 0; i < bApp->gameObjects.size(); ++i){
+                    auto obj = bApp->gameObjects[i];
+                    if(obj->getName() == static_cast<Ogre::SceneNode*>(obA->getUserPointer())->getName() ){
+                        if (obj->ai->vulnerability){
+                            destory = true;
+                            score += 50;
+                            bApp->gameObjects.erase(bApp->gameObjects.begin()+i);
+                        }
                     }
                 }
-                toRemove.insert(static_cast<btRigidBody*>(ogreA ? obA : obB));
+                if(destory)
+                    toRemove.insert(static_cast<btRigidBody*>(ogreA ? obA : obB));
                 bApp->playSound(3);
             }
         }
@@ -1030,6 +1218,8 @@ void bulletCallback(btDynamicsWorld *world, btScalar timeStep)
     for(auto rb : toRemove)
     {
         auto sn = static_cast<Ogre::SceneNode*>(rb->getUserPointer());
+        std::string s = "\n5\n5\n" + sn->getName();
+        bApp->message(s);
         sn->removeAndDestroyAllChildren();
         bApp->mSceneMgr->destroySceneNode(sn);
         bApp->rigidBodies.erase(rb);

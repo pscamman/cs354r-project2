@@ -52,8 +52,13 @@ http://www.ogre3d.org/wiki/
 // SDL
 #include "SDL/SDL.h"
 #include "SDL/SDL_mixer.h"
-#include "NetManager.h"
+
+#include "GameObject.h"
 #include "AI.h"
+// CEGUI
+#include <CEGUI/CEGUI.h>
+#include <CEGUI/RendererModules/Ogre/Renderer.h>
+#include "NetManager.h"
 
 // GUI
 #include "SGUI.h"
@@ -128,10 +133,9 @@ protected:
     virtual bool frameRenderingQueued(const Ogre::FrameEvent& evt);
     virtual void hostRendering(const Ogre::FrameEvent& evt);
     virtual void clientRendering(const Ogre::FrameEvent& evt);
-    virtual void clientSwitch(std::istringstream& c);
+    virtual void clientSwitch(std::istringstream& buffer);
 
     virtual void message (std::string msg);
-    virtual void message2(std::string msg);
 
     virtual bool keyPressed   (const OIS::KeyEvent   &arg);
     virtual bool keyReleased  (const OIS::KeyEvent   &arg);
@@ -200,13 +204,14 @@ protected:
                                        "punch1.wav",
                                        "wow.wav"};
     std::vector<Mix_Chunk*>     mix_chunks;  // the chunks of audio
+
+    int particleIndex;
+    std::vector<GameObject*> gameObjects;
     Mix_Music* gMusic;
 
     // Network
     NetManager nMan;
     bool hosting;
-
-    std::vector<AI*> AIObjects;
 
     // GUI
     SGUI* mGUI;

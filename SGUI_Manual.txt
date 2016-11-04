@@ -1,0 +1,131 @@
+================================================================================
+SGUI User Manual
+================================================================================
+Public Members (With listed functionality)
+--------------------------------------------------------------------------------
+bool isPaused
+- This is used as a flag to determine whether the game is paused or not.
+- use this to disable anything you don't want to run while the game is paused
+  > Mouse events, physics events, game loop events, etc.
+
+bool isGameOver
+- This is used as a flag to determine whether the game has ended or not
+- Use this to help handle the your win/lose condition and as a means to determine
+  when to display the game over screen
+
+ bool isStarted
+ - This is used as a flag to determine whether the game has been started or not
+   > In the case of a single player game this is when the user presses the 
+     single player button and in the case of multi-player this is after the
+     host signals the game to startj
+
+bool multiStarted;                        
+- This is a flag which is used to determine whether a multi-player game is ready 
+  to be started or not
+  > Starts after the host successfully starts the server program and is true as 
+    long as the program is listening for connections. 
+- This can be used to "lock" the game after the maximum number of clients have 
+  joined
+- Also controls functionality for the "Press SPACE to start dialog"
+  > Note: This is not programmed in by default, you will have to set up 
+    functionality for the space bar; change SPACE to whatever key you wish to use
+
+std::string currentAddress;  
+- Used to hold the IP address passed in from the network program as well as from 
+  the client program
+- If hosting, the network program will need to pass the bound IP address of the
+  server into the updateIPAddress function in order to update the host
+  dialog box (see the "linking in networking" section below for more information)
+
+int nFlags; 
+- Network flag variable, used to determine whether the user is the client or the 
+  host or whether the flag is unset
+    > HOST = 1
+    > CLIENT = 0
+    > UNSET = -1
+
+int timebox_time;               
+- Holds the time stored in the timer in seconds
+
+float tMod;    
+- Time modifier variable, used to adjust system for bullet callback. This is used 
+  in the UpdateTimer function. if you notice your timer running slow try setting 
+  this to a lower value (currently set to update timebox_time every 2 ticks)
+
+
+void setTitleScreenVisible(bool isVisible)
+- Sets the title screen and all components as visible or invisible
+
+void setGOverScreenVisible(bool isVisible)
+- Sets the game over screen as visible or invisible
+
+void setPauseVisible(bool isVisible)
+- Sets the pause menu and text as visible or invisible
+
+void playerMessageVisible(bool isVisible)
+- sets the player message "Press "Space" to start" visible or invisible
+
+void setMultiConVisible(bool isVisible)
+- Sets the multi-player connect window visible/invisible
+
+void setConnectingVisible(bool isVisible) 
+- Sets the connecting dialog box visible or invisible
+
+void setHostVisible(bool isVisible)
+- Set the client/host connectivity window visible or invisible as host
+
+void setClientVisible(bool isVisible)
+- Set the client/host connectivity window visible or invisible as client
+
+void setP1ScoreVisible(bool isVisible)               
+void setP2ScoreVisible(bool isVisible)
+void setP3ScoreVisible(bool isVisible) 
+void setP4ScoreVisible(bool isVisible)
+- These functions set player 1~4's score window and text as visible or 
+  invisible respectively 
+
+void updateP1Score(int newScore)
+void updateP2Score(int newScore)
+void updateP3Score(int newScore)
+void updateP4Score(int newScore)
+- Sets the score for player !~4 respectively
+
+void resetP1Pos()                                        
+void resetP2Pos()
+void resetP3Pos()
+void resetP4Pos()
+- Resets the position of player 1~4's score window on the screen
+  used in the setTitleScreenVisible function as a way to reset
+  the window after the game over screen re-positions the score
+
+void setTimerVisible(bool isVisible)
+- Sets the timer window visible or invisible
+
+void setTimer(int seconds)
+-Sets the timer with a new value
+
+void updateTimer()
+- updates the timer based on how many seconds have passed since the 
+  last time this function was called
+  > Uses the tMod function to accomplish this
+
+
+void updateIPAddress(std::string newIP)
+- upadates currentAddress and also sets
+
+void setServerStartVisible(bool isVisible);
+- Sets the starting server... dialog box visible or invisible
+
+--------------------------------------------------------------------------------
+Linking In Networking
+--------------------------------------------------------------------------------
+Hosting
+- When "Multiplayer" is clicked it will bring up a menu with 2 options labeled
+  "join" or "host". If "host" is clicked a dialog will pop up with the words
+  "starting server..." the GUI will lock at this point. To finish setting up
+  networking do the following:
+  1. Run server script to start a server on your local machine
+  2. Pass the IP address as a string to the updateIPAddress function
+  3. setServerStartVisible(false)
+  4. setHostVisible(true)
+  
